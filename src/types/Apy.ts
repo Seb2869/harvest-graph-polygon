@@ -32,11 +32,13 @@ export function saveApyAutoCompound(vaultAddress: Address, block: ethereum.Block
       if (!vault.lastSharePrice.isZero()) {
         const timestamp = block.timestamp
         const diffSharePrice = newSharePrice.minus(vault.lastSharePrice).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
-        const diffTimeStamp = timestamp.minus(vault.lastShareTimestamp)
-        calculateAndSaveApyAutoCompound(`${tx.hash}-${vault.id}`, diffSharePrice, diffTimeStamp, vault.id, block)
-        vault.lastShareTimestamp = timestamp
-        vault.lastSharePrice = newSharePrice
-        vault.save()
+        if (diffSharePrice.gt(BigDecimal.zero())) {
+          const diffTimeStamp = timestamp.minus(vault.lastShareTimestamp)
+          calculateAndSaveApyAutoCompound(`${tx.hash}-${vault.id}`, diffSharePrice, diffTimeStamp, vault.id, block)
+          vault.lastShareTimestamp = timestamp
+          vault.lastSharePrice = newSharePrice
+          vault.save()
+        }
       }
     }
   }
