@@ -120,6 +120,7 @@ export function saveApyReward(
       apyReward.apr = apr
       apyReward.apy = apy
       apyReward.tvlUsd = tvlUsd
+      apyReward.prices = prices
       // if (price.gt(BigDecimal.zero())) {
       //
       //   const tokenPrice = getPriceForCoin(Address.fromString(pool.rewardTokens[0]), block.number.toI32())
