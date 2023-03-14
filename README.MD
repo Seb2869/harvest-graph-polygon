@@ -1,9 +1,9 @@
-# Harvest sub graph 
+# Harvest sub graph
 
 
 ## Setup
 
-- Install dependencies `yarn install` 
+- Install dependencies `yarn install`
 - Deploy on local machine `graph create --node http://localhost:8020/ harvest-graph`
 - Run tests `graph test`
 
@@ -11,10 +11,12 @@
 ## Queries
 
 For query use this urls:
-- **Ethereum** - <https://api.thegraph.com/subgraphs/id/QmPRifvkxXjdVMtcFDCd72sLnGE9ZXhg2ep3gNawbSTeVC>
-- **Polygon** - <https://api.thegraph.com/subgraphs/id/Qma7BgwPykQAY28pVsyH3s57gndPiVZKg9rpHA1q4FpDBG>
-- **BSC** - TBD
-- **Arbitrum** - TBD
+<https://api.thegraph.com/subgraphs/id/{id}>
+#### ID you can take from dashboard
+
+- **Ethereum** - https://thegraph.com/hosted-service/subgraph/harvestfi/harvest-finance
+- **Polygon** - https://thegraph.com/hosted-service/subgraph/harvestfi/harvest-finance-polygon
+- **Arbitrum** - https://thegraph.com/hosted-service/subgraph/harvestfi/harvest-finance-arbitrum
 
 
 ### Get all vaults
