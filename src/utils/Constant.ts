@@ -1,5 +1,5 @@
 import { Address, BigDecimal, BigInt, dataSource } from "@graphprotocol/graph-ts";
-import { pow } from "./Math";
+import { pow } from "./MathUtils";
 
 export const UNKNOWN = 'unknown';
 
@@ -22,6 +22,9 @@ export const STABLE_COIN_ARRAY_MAINNET = [
   '0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase(),
   '0x0000000000085d4780B73119b644AE5ecd22b376'.toLowerCase(),
   '0x6B175474E89094C44Da98b954EedeAC495271d0F'.toLowerCase(),
+
+  // Orbit Bridge Polygon Tether USD (oUSDT)
+  '0x957da9ebbcdc97dc4a8c274dd762ec2ab665e15f'.toLowerCase()
 ]
 
 export const STABLE_COIN_ARRAY_MATIC = [
@@ -29,6 +32,22 @@ export const STABLE_COIN_ARRAY_MATIC = [
   '0xc2132d05d31c914a87c6611c10748aeb04b58e8f'.toLowerCase(),
   '0xE840B73E5287865EEc17d250bFb1536704B43B21'.toLowerCase(),
   '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'.toLowerCase(),
+  // Euro Tether (PoS) (EURT)
+  '0x7BDF330f423Ea880FF95fC41A280fD5eCFD3D09f'.toLowerCase(),
+  // Jarvis Synthetic Canadian Dollar (jCAD)
+  '0x8ca194A3b22077359b5732DE53373D4afC11DeE3'.toLowerCase(),
+  // Jarvis Synthetic Singapore Dollar (jSGD)
+  '0xa926db7a4CC0cb1736D5ac60495ca8Eb7214B503'.toLowerCase(),
+  // Monerium EUR emoney (EURe)
+  '0x18ec0A6E18E5bc3784fDd3a3634b31245ab704F6'.toLowerCase(),
+  // Orbit Bridge Polygon Tether USD (oUSDT)
+  '0x957da9ebbcdc97dc4a8c274dd762ec2ab665e15f'.toLowerCase(),
+  // Orbit Bridge Polygon USD Coin (oUSDC)
+  '0x5bef2617ecca9a39924c09017c5f1e25efbb3ba8'.toLowerCase(),
+  // Orbit Bridge Polygon ZEMIT (oZEMIT)
+  '0xa34e0eacb7fbb0b0d45da89b083e0f87fcdf6157'.toLowerCase(),
+  // Orbit Bridge Polygon MOOI (oMOOI)
+  '0x746351ab4b9d4f802b7b770f33184d0a6b17363d'.toLowerCase()
 ]
 
 export const PS_ADDRESSES_MAINNET = [
@@ -49,11 +68,14 @@ export const LP_UNI_PAIR_CONTRACT_NAME = [
   // only uniswap v2
   'Uniswap'.toLowerCase(),
   'Pancake'.toLowerCase(),
-  'Kyber'.toLowerCase()
+  'Kyber'.toLowerCase(),
+  'ApeSwapFinance'.toLowerCase(),
 ]
 export const BALANCER_CONTRACT_NAME = 'Balancer'.toLowerCase()
 export const CURVE_CONTRACT_NAME = 'Curve.fi'.toLowerCase()
 export const F_UNI_V3_CONTRACT_NAME = 'fUniV3'.toLowerCase()
+export const MESH_SWAP_CONTRACT = 'Meshswap'.toLowerCase()
+
 
 export const UNISWAP_V3_FEES = [
   '3000',

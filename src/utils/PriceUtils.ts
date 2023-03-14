@@ -11,9 +11,8 @@ import {
   DEFAULT_PRICE,
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isPsAddress, isStableCoin,
-  LP_UNI_PAIR_CONTRACT_NAME,
+  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
   NULL_ADDRESS,
-  UNISWAP_V3_VALUE,
 } from "./Constant";
 import { Token, Vault } from "../../generated/schema";
 import { UniswapV2PairContract } from "../../generated/ExclusiveRewardPoolListener/UniswapV2PairContract";
@@ -22,10 +21,10 @@ import { BalancerVaultContract } from "../../generated/templates/VaultListener/B
 import { ERC20 } from "../../generated/Controller/ERC20";
 import { CurveVaultContract } from "../../generated/templates/VaultListener/CurveVaultContract";
 import { CurveMinterContract } from "../../generated/templates/VaultListener/CurveMinterContract";
-import { getUniswapPoolV3ByVault } from "./UniswapV3Pool";
-import { UniswapV3PoolContract } from "../../generated/ExclusiveRewardPoolListener/UniswapV3PoolContract";
-import { fetchContractDecimal } from "./ERC20";
-import { pow } from "./Math";
+import { fetchContractDecimal } from "./ERC20Utils";
+import { pow } from "./MathUtils";
+import { MeshSwapContract } from "../../generated/Controller1/MeshSwapContract";
+import { isBalancer, isCurve, isLpUniPair, isMeshSwap } from "./PlatformUtils";
 
 
 export function getPriceForCoin(address: Address, block: number): BigInt {
@@ -57,11 +56,6 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
     return price.divDecimal(BD_18)
   }
 
-  // is from uniSwapV3 pools
-  if (isUniswapV3(vault.name)) {
-    return getPriceForUniswapV3(vault, block)
-  }
-
   const underlying = Token.load(underlyingAddress)
   if (underlying != null) {
     if (isLpUniPair(underlying.name)) {
@@ -84,48 +78,40 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
 
       return getPriceForCurve(underlyingAddress, block)
     }
+
+    if (isMeshSwap(underlying.name)) {
+      return getPriceFotMeshSwap(underlyingAddress, block)
+    }
   }
 
   return BigDecimal.zero()
 
 }
 
-export function getPriceForUniswapV3(vault: Vault, block: number): BigDecimal {
-  const poolAddress = getUniswapPoolV3ByVault(vault)
-  if (!poolAddress.equals(NULL_ADDRESS)) {
-    const pool =  UniswapV3PoolContract.bind(poolAddress)
-    const sqrtPriceX96 = pool.slot0().getSqrtPriceX96()
-    const sqrt = pow(sqrtPriceX96.toBigDecimal(), 2)
-    const tokenA = pool.token0()
-    const tokenB = pool.token1()
-    const decimalA = fetchContractDecimal(tokenA)
-    const decimalB = fetchContractDecimal(tokenB)
-    const decimal = pow(BD_TEN, decimalA.toI32()).div(pow(BD_TEN, decimalB.toI32()))
-    const value = sqrt.times(decimal.div(UNISWAP_V3_VALUE))
-    const tokenBPrice = getPriceForCoin(tokenB, block).divDecimal(BD_18)
-    return value.times(tokenBPrice)
-  }
-
-  return BigDecimal.zero()
-}
-
-function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal {
+export function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal {
   const curveContract = CurveVaultContract.bind(Address.fromString(underlyingAddress))
   const tryMinter = curveContract.try_minter()
-  if (tryMinter.reverted) {
-    return BigDecimal.zero()
+
+  let minter = CurveMinterContract.bind(Address.fromString(underlyingAddress))
+  if (!tryMinter.reverted) {
+    minter = CurveMinterContract.bind(tryMinter.value)
   }
-  const minter = CurveMinterContract.bind(tryMinter.value)
+
   let index = 0
   let tryCoins = minter.try_coins(BigInt.fromI32(index))
-  while (tryCoins.reverted) {
+  while (!tryCoins.reverted) {
+    const coin = tryCoins.value
+    if (coin.equals(Address.zero())) {
+      index = index - 1
+      break
+    }
     index = index + 1
     tryCoins = minter.try_coins(BigInt.fromI32(index))
   }
   const tryDecimals = curveContract.try_decimals()
-  let decimal = BigInt.fromI32(DEFAULT_DECIMAL)
+  let decimal = DEFAULT_DECIMAL
   if (!tryDecimals.reverted) {
-    decimal = tryDecimals.value
+    decimal = tryDecimals.value.toI32()
   } else {
     log.log(log.Level.WARNING, `Can not get decimals for ${underlyingAddress}`)
   }
@@ -138,7 +124,11 @@ function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal 
 
   for (let i=0;i<size;i++) {
     const index = BigInt.fromI32(i)
-    const token = minter.coins(index)
+    const tryCoins1 = minter.try_coins(index)
+    if (tryCoins1.reverted) {
+      break
+    }
+    const token = tryCoins1.value
     const tokenPrice = getPriceForCoin(token, block).divDecimal(BD_18)
     const balance = minter.balances(index)
     const tryDecimalsTemp = ERC20.bind(token).try_decimals()
@@ -148,18 +138,18 @@ function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal 
     } else {
       log.log(log.Level.WARNING, `Can not get decimals for ${token}`)
     }
-    value = value.plus(tokenPrice.times(normalizePrecision(balance, BigInt.fromI32(decimalsTemp)).toBigDecimal().div(BD_18)))
+    const tempBalance = balance.toBigDecimal().div(pow(BD_TEN, decimalsTemp))
+
+    value = value.plus(tokenPrice.times(tempBalance))
   }
-
-  return value.times(BD_18).div(normalizePrecision(curveContract.totalSupply(), decimal).toBigDecimal())
+  return value.times(BD_18).div(curveContract.totalSupply().toBigDecimal())
 }
-
 // amount / (10 ^ 18 / 10 ^ decimal)
 function normalizePrecision(amount: BigInt, decimal: BigInt): BigInt {
   return amount.div(BI_18.div(BigInt.fromI64(10 ** decimal.toI64())))
 }
 
-function getPriceLpUniPair(underlyingAddress: string, block: number): BigDecimal {
+export function getPriceLpUniPair(underlyingAddress: string, block: number): BigDecimal {
   const uniswapV2Pair = UniswapV2PairContract.bind(Address.fromString(underlyingAddress))
   const tryGetReserves = uniswapV2Pair.try_getReserves()
   if (tryGetReserves.reverted) {
@@ -169,13 +159,19 @@ function getPriceLpUniPair(underlyingAddress: string, block: number): BigDecimal
   }
   const reserves = tryGetReserves.value
   const totalSupply = uniswapV2Pair.totalSupply()
-  const positionFraction = BD_ONE.div(totalSupply.toBigDecimal())
+  const positionFraction = BD_ONE.div(totalSupply.toBigDecimal().div(BD_18))
+
+  const token0 = uniswapV2Pair.token0()
+  const token1 = uniswapV2Pair.token1()
+
   const firstCoin = reserves.get_reserve0().toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token0).toI32()))
   const secondCoin = reserves.get_reserve1().toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token1).toI32()))
 
 
-  const token0Price = getPriceForCoin(uniswapV2Pair.token0(), block)
-  const token1Price = getPriceForCoin(uniswapV2Pair.token1(), block)
+  const token0Price = getPriceForCoin(token0, block)
+  const token1Price = getPriceForCoin(token1, block)
 
   if (token0Price.isZero() || token1Price.isZero()) {
     return BigDecimal.zero()
@@ -189,21 +185,25 @@ function getPriceLpUniPair(underlyingAddress: string, block: number): BigDecimal
         .divDecimal(BD_18)
         .times(secondCoin)
     )
-    .times(BD_18)
 }
 
-function getPriceForBalancer(underlying: string, block: number): BigDecimal {
+export function getPriceForBalancer(underlying: string, block: number): BigDecimal {
   const balancer = WeightedPool2TokensContract.bind(Address.fromString(underlying))
   const poolId = balancer.getPoolId()
   const totalSupply = balancer.totalSupply()
   const vault = BalancerVaultContract.bind(balancer.getVault())
   const tokenInfo = vault.getPoolTokens(poolId)
 
-  // TODO calc in BD
   let price = BigDecimal.zero()
   for (let i=0;i<tokenInfo.getTokens().length;i++) {
     const tokenPrice = getPriceForCoin(tokenInfo.getTokens()[i], block).divDecimal(BD_18)
-    price = price.plus(price.times(tokenPrice))
+    const tryDecimals = ERC20.bind(tokenInfo.getTokens()[i]).try_decimals()
+    let decimal = DEFAULT_DECIMAL
+    if (!tryDecimals.reverted) {
+      decimal = tryDecimals.value
+    }
+    const balance = normalizePrecision(tokenInfo.getBalances()[i], BigInt.fromI32(decimal)).toBigDecimal()
+    price = price.plus(balance.times(tokenPrice))
   }
 
   if (price.le(BigDecimal.zero())) {
@@ -212,34 +212,45 @@ function getPriceForBalancer(underlying: string, block: number): BigDecimal {
   return price.div(totalSupply.toBigDecimal())
 }
 
-export function isLpUniPair(name: string): boolean {
-  for (let i=0;i<LP_UNI_PAIR_CONTRACT_NAME.length;i++) {
-    if (name.toLowerCase().startsWith(LP_UNI_PAIR_CONTRACT_NAME[i])) {
-      return true
-    }
-  }
-  return false
-}
 
-function isBalancer(name: string): boolean {
-  if (name.toLowerCase().startsWith(BALANCER_CONTRACT_NAME)) {
-    return true
-  }
+export function getPriceFotMeshSwap(underlyingAddress: string, block: number): BigDecimal {
+  const meshSwap = MeshSwapContract.bind(Address.fromString(underlyingAddress))
 
-  return false
-}
+  const tryReserve0 = meshSwap.try_reserve0()
+  const tryReserve1 = meshSwap.try_reserve1()
 
-function isCurve(name: string): boolean {
-  if (name.toLowerCase().startsWith(CURVE_CONTRACT_NAME)) {
-    return true
+  if (tryReserve0.reverted || tryReserve1.reverted) {
+    log.log(log.Level.WARNING, `Can not get reserves for underlyingAddress = ${underlyingAddress}, try get price for coin`)
+
+    return BigDecimal.zero()
   }
 
-  return false
-}
+  const reserve0 = tryReserve0.value
+  const reserve1 = tryReserve1.value
+  const totalSupply = meshSwap.totalSupply()
+  const token0 = meshSwap.token0()
+  const token1 = meshSwap.token1()
+  const positionFraction = BD_ONE.div(totalSupply.toBigDecimal().div(pow(BD_TEN, meshSwap.decimals())))
 
-export function isUniswapV3(name: string): boolean {
-  if (name.toLowerCase().startsWith(F_UNI_V3_CONTRACT_NAME)) {
-    return true
+  const firstCoin = reserve0.toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token0).toI32()))
+  const secondCoin = reserve1.toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token1).toI32()))
+
+
+  const token0Price = getPriceForCoin(token0, block)
+  const token1Price = getPriceForCoin(token1, block)
+
+  if (token0Price.isZero() || token1Price.isZero()) {
+    return BigDecimal.zero()
   }
-  return false
+
+  return token0Price
+    .divDecimal(BD_18)
+    .times(firstCoin)
+    .plus(
+      token1Price
+        .divDecimal(BD_18)
+        .times(secondCoin)
+    )
 }

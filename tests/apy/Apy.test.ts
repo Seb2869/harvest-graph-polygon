@@ -4,7 +4,7 @@ import {
   test
 } from "matchstick-as/assembly/index"
 import { BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
-import { calculateApr, calculateAprAutoCompound, calculateApy } from "../../src/utils/Apy";
+import { calculateApr, calculateAprAutoCompound, calculateApy } from "../../src/utils/ApyUtils";
 import { BD_18 } from "../../src/utils/Constant";
 
 
@@ -68,5 +68,59 @@ describe("Apy tests", () => {
     const apr = calculateAprAutoCompound(diffSharePrice, diffTimestamp)
     log.log(log.Level.INFO, `apr = ${apr}`)
     assert.assertTrue(apr.equals(BigDecimal.fromString('1.563605804228492350272929960790344')))
+  })
+
+  test('Calculate apy reward GNOME for vault GENE-ETH', ()=> {
+    const tvlUsd = BigDecimal.fromString('160000')
+    const period = BigDecimal.fromString('592512')
+    const rewardRate = BigDecimal.fromString('12685407605284269')
+    const rewardTokenPrice = BigDecimal.fromString('0.25')
+    const rewardUsdForPeriod = rewardRate.div(BD_18).times(period).times(rewardTokenPrice)
+    // const rewardUsdForPeriod = BigDecimal.fromString('92')
+
+    const apr = calculateApr(period, rewardUsdForPeriod, tvlUsd)
+    const apy = calculateApy(apr)
+
+    log.log(log.Level.INFO, `rewardUsdForPeriod = ${rewardUsdForPeriod}`)
+    log.log(log.Level.INFO, `apr = ${apr}`)
+    log.log(log.Level.INFO, `apy = ${apy}`)
+    assert.assertTrue(apr.equals(BigDecimal.fromString('62.550159225706069905375')))
+    assert.assertTrue(apy.equals(BigDecimal.fromString('86.81828899053470278203617920621')))
+  })
+
+  test('Calculate apy reward WMATIC for vault GENE-ETH', ()=> {
+    const tvlUsd = BigDecimal.fromString('160000')
+    const period = BigDecimal.fromString('432707')
+    const rewardRate = BigDecimal.fromString('49233807931795')
+    const rewardTokenPrice = BigDecimal.fromString('1.25')
+    const rewardUsdForPeriod = rewardRate.div(BD_18).times(period).times(rewardTokenPrice)
+    // const rewardUsdForPeriod = BigDecimal.fromString('92')
+
+    const apr = calculateApr(period, rewardUsdForPeriod, tvlUsd)
+    const apy = calculateApy(apr)
+
+    log.log(log.Level.INFO, `rewardUsdForPeriod = ${rewardUsdForPeriod}`)
+    log.log(log.Level.INFO, `apr = ${apr}`)
+    log.log(log.Level.INFO, `apy = ${apy}`)
+    assert.assertTrue(apr.equals(BigDecimal.fromString('1.213828763428448353125')))
+    assert.assertTrue(apy.equals(BigDecimal.fromString('1.2212051333044398579198860661639')))
+  })
+
+  test('Calculate apy reward miFARM for vault GENE-ETH', ()=> {
+    const tvlUsd = BigDecimal.fromString('160000')
+    const period = BigDecimal.fromString('432707')
+    const rewardRate = BigDecimal.fromString('132827197920')
+    const rewardTokenPrice = BigDecimal.fromString('51')
+    const rewardUsdForPeriod = rewardRate.div(BD_18).times(period).times(rewardTokenPrice)
+    // const rewardUsdForPeriod = BigDecimal.fromString('92')
+
+    const apr = calculateApr(period, rewardUsdForPeriod, tvlUsd)
+    const apy = calculateApy(apr)
+
+    log.log(log.Level.INFO, `rewardUsdForPeriod = ${rewardUsdForPeriod}`)
+    log.log(log.Level.INFO, `apr = ${apr}`)
+    log.log(log.Level.INFO, `apy = ${apy}`)
+    assert.assertTrue(apr.equals(BigDecimal.fromString('0.13361067914693112')))
+    assert.assertTrue(apy.equals(BigDecimal.fromString('0.1336997331095886456384913242857')))
   })
 })

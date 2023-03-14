@@ -1,9 +1,10 @@
-import { AddVaultAndStrategyCall, SharePriceChangeLog } from "../generated/Controller/Controller";
 import { SharePrice, Strategy, Vault } from "../generated/schema";
-import { loadOrCreateVault } from "./utils/Vault";
-import { pow, powBI } from "./utils/Math";
+import { loadOrCreateVault } from "./types/Vault";
+import { pow, powBI } from "./utils/MathUtils";
 import { BD_TEN, BI_TEN } from "./utils/Constant";
-import { calculateAndSaveApyAutoCompound } from "./utils/Apy";
+import { SharePriceChangeLog } from "../generated/Controller/ControllerContract";
+import { Address } from "@graphprotocol/graph-ts";
+import { calculateAndSaveApyAutoCompound } from "./types/Apy";
 
 
 export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
@@ -12,6 +13,10 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
   const block = event.block.number;
   const timestamp = event.block.timestamp;
   const sharePrice = new SharePrice(`${event.transaction.hash.toHex()}-${vaultAddress}`)
+  let vault = Vault.load(vaultAddress)
+  if (vault == null) {
+    vault = loadOrCreateVault(Address.fromString(vaultAddress), event.block, strategyAddress)
+  }
   sharePrice.vault = vaultAddress;
   sharePrice.strategy = strategyAddress;
   sharePrice.oldSharePrice = event.params.oldSharePrice;
@@ -20,8 +25,7 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
   sharePrice.timestamp = timestamp;
   sharePrice.save();
 
-  const vault = Vault.load(vaultAddress)
-  if (vault != null) {
+  if (vault != null && sharePrice.oldSharePrice != sharePrice.newSharePrice) {
     const lastShareTimestamp = vault.lastShareTimestamp
     if (!lastShareTimestamp.isZero()) {
       const diffSharePrice = sharePrice.newSharePrice.minus(sharePrice.oldSharePrice).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
@@ -33,21 +37,4 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
     vault.save()
 
   }
-}
-
-export function handleAddVaultAndStrategy(call: AddVaultAndStrategyCall): void {
-  const vaultAddress = call.inputs._vault;
-  const strategyAddress = call.inputs._strategy;
-  const block = call.block.number;
-  const timestamp = call.block.timestamp;
-
-  let strategy = Strategy.load(strategyAddress.toHex());
-  if (strategy == null) {
-    strategy = new Strategy(strategyAddress.toHex());
-  }
-  strategy.timestamp = timestamp;
-  strategy.createAtBlock = block;
-  strategy.save();
-
-  loadOrCreateVault(vaultAddress, call.block, strategy.id)
 }

@@ -1,7 +1,7 @@
 import { Address } from "@graphprotocol/graph-ts";
 import { Token } from "../../generated/schema";
 import { ERC20 } from "../../generated/Controller/ERC20";
-import { DEFAULT_DECIMAL, UNKNOWN } from "./Constant";
+import { DEFAULT_DECIMAL, UNKNOWN } from "../utils/Constant";
 
 export function loadOrCreateERC20Token(tokenAddress: Address): Token{
   let tokenContract = ERC20.bind(tokenAddress)

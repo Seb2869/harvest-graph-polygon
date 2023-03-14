@@ -1,9 +1,10 @@
-import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, ethereum } from "@graphprotocol/graph-ts";
 import { Tvl, Vault } from "../../generated/schema";
-import { fetchContractDecimal, fetchContractTotalSupply } from "./ERC20";
-import { getPriceByVault, getPriceForCoin } from "./Price";
-import { BD_18, BD_ZERO, BI_18, SECONDS_OF_YEAR, YEAR_PERIOD } from "./Constant";
-import { fetchPricePerFullShare } from "./Vault";
+import { fetchContractTotalSupply } from "../utils/ERC20Utils";
+import { BD_TEN, BD_ZERO } from "../utils/Constant";
+import { pow } from "../utils/MathUtils";
+import { fetchPricePerFullShare } from "../utils/VaultUtils";
+import { getPriceByVault } from "../utils/PriceUtils";
 
 export function createTvl(address: Address, transaction: ethereum.Transaction, block: ethereum.Block): void {
   const vaultAddress = address;
@@ -19,7 +20,7 @@ export function createTvl(address: Address, transaction: ethereum.Transaction, b
       tvl.createAtBlock = block.number
       tvl.totalSupply = fetchContractTotalSupply(vaultAddress)
 
-      const decimal = BigDecimal.fromString((10 ** vault.decimal.toI64()).toString())
+      const decimal = pow(BD_TEN, vault.decimal.toI32())
       tvl.sharePrice = fetchPricePerFullShare(vaultAddress)
       tvl.sharePriceDivDecimal = BigDecimal.fromString(tvl.sharePrice.toString()).div(decimal)
       tvl.decimal = decimal
@@ -38,16 +39,4 @@ export function createTvl(address: Address, transaction: ethereum.Transaction, b
       tvl.save()
     }
   }
-}
-
-export function calculateTvlUsd(vaultAddress: Address, price: BigDecimal): BigDecimal {
-  if (price.le(BigDecimal.zero())) {
-    return BD_ZERO
-  }
-  const totalSupply = fetchContractTotalSupply(vaultAddress).toBigDecimal()
-  const decimal = fetchContractDecimal(vaultAddress)
-  const tempDecimal = BigDecimal.fromString((10 ** decimal.toI64()).toString())
-  const sharePriceDivDecimal = fetchPricePerFullShare(vaultAddress).toBigDecimal().div(tempDecimal)
-
-  return totalSupply.div(tempDecimal).times(price).times(sharePriceDivDecimal)
 }

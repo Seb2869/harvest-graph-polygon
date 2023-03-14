@@ -1,6 +1,6 @@
 import { ApyAutoCompound, ApyReward, Pool, Vault } from "../../generated/schema";
 import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
-import { getPriceByVault, getPriceForCoin } from "./Price";
+import { getPriceByVault, getPriceForCoin } from "../utils/PriceUtils";
 import {
   BD_18,
   BD_ONE,
@@ -8,13 +8,19 @@ import {
   BD_TEN,
   BD_ZERO,
   getFarmToken,
-  isPsAddress,
+  isPsAddress, NULL_ADDRESS,
   SECONDS_OF_YEAR,
   YEAR_PERIOD
-} from "./Constant";
-import { calculateTvlUsd } from "./Tvl";
-import { pow } from "./Math";
+} from "../utils/Constant";
 import { VaultContract } from "../../generated/Controller/VaultContract";
+import { pow } from "../utils/MathUtils";
+import { calculateTvlUsd } from "../utils/TvlUtils";
+import {
+  fetchPeriodFinishForToken,
+  fetchRewardRateForToken,
+  fetchRewardToken,
+  fetchRewardTokenLength
+} from "../utils/PotPoolUtils";
 
 export function saveApyAutoCompound(vaultAddress: Address, block: ethereum.Block, tx: ethereum.Transaction): void {
   const vault = Vault.load(vaultAddress.toHex())
@@ -43,7 +49,6 @@ export function saveApyReward(
   rewardToken: Address,
   rewardRate: BigInt,
   periodFinish: BigInt,
-  rewardAmount: BigInt,
   tx: ethereum.Transaction,
   block: ethereum.Block
 ): void {
@@ -52,44 +57,99 @@ export function saveApyReward(
     let vault = Vault.load(pool.vault)
     if (vault != null) {
 
+      if (vault.skipFirstApyReward == true) {
+        vault.skipFirstApyReward = false
+        vault.save()
+        return
+      }
+      let rewardRates: BigInt[] = []
+      let periodFinishes: BigInt[] = []
+      let rewardForPeriods: BigDecimal[] = []
+      let prices: BigDecimal[] = []
+
+      let apr = BigDecimal.zero()
+      let apy = BigDecimal.zero()
+
       let price = BigDecimal.zero()
       if (isPsAddress(pool.vault)) {
         price = getPriceForCoin(getFarmToken(), block.number.toI32()).divDecimal(BD_18)
       } else {
         price = getPriceByVault(vault, block.number.toI32())
       }
-      const apy = new ApyReward(`${tx.hash.toHex()}-${vault.id}`)
 
-      apy.periodFinish = periodFinish
-      apy.rewardAmount = rewardAmount
-      apy.rewardRate = rewardRate
-      apy.rewardForPeriod = BigDecimal.zero()
-      apy.apr = BigDecimal.zero()
-      apy.apy = BigDecimal.zero()
-      apy.tvlUsd = BigDecimal.zero()
-      if (price.gt(BigDecimal.zero())) {
+      const tvlUsd = calculateTvlUsd(Address.fromString(vault.id), price)
 
-        const tokenPrice = getPriceForCoin(Address.fromString(pool.rewardTokens[0]), block.number.toI32())
+      const tokenLength = fetchRewardTokenLength(poolAddress)
+      for (let i=0;i<tokenLength.toI32();i++) {
+        const rewardToken = fetchRewardToken(poolAddress, BigInt.fromI32(i));
+        if (rewardToken == NULL_ADDRESS) {
+          continue;
+        }
+        const rewardRate = fetchRewardRateForToken(poolAddress, rewardToken);
+        if (rewardRate == BigInt.zero()) {
+          continue;
+        }
+        const periodFinish = fetchPeriodFinishForToken(poolAddress, rewardToken)
+        if (periodFinish == BigInt.zero()) {
+          continue;
+        }
+        const price = getPriceForCoin(rewardToken, block.number.toI32())
         const period = (periodFinish.minus(block.timestamp)).toBigDecimal()
 
-        if (!tokenPrice.isZero() && !rewardRate.isZero()) {
-          apy.rewardForPeriod = rewardRate.divDecimal(BD_18).times(tokenPrice.divDecimal(BD_18)).times(period)
-        }
+        if (period.gt(BigDecimal.zero()) && price.gt(BigInt.zero())) {
+          const priceBD = price.divDecimal(BD_18)
+          const rewardForPeriod = rewardRate.divDecimal(BD_18).times(priceBD).times(period)
 
-        const tvlUsd = calculateTvlUsd(Address.fromString(vault.id), price)
-        apy.tvlUsd = tvlUsd
-        const apr = calculateApr(period, apy.rewardForPeriod, tvlUsd)
-        if (!(BigDecimal.compare(apr, BD_ZERO) == 0)) {
-          const apyValue = calculateApy(apr)
-          apy.apr = apr
-          apy.apy = apyValue
+          rewardRates.push(rewardRate)
+          periodFinishes.push(periodFinish)
+          rewardForPeriods.push(rewardForPeriod)
+          prices.push(priceBD)
+
+          const aprTemp = calculateApr(period, rewardForPeriod, tvlUsd)
+          const apyTemp = calculateApy(aprTemp)
+
+          apr = apr.plus(aprTemp)
+          apy = apy.plus(apyTemp)
         }
       }
-      apy.vault = vault.id
-      apy.timestamp = block.timestamp
-      apy.createAtBlock = block.number
-      apy.priceUnderlying = price
-      apy.save()
+
+
+      const apyReward = new ApyReward(`${tx.hash.toHex()}-${vault.id}`)
+
+      apyReward.periodFinishes = periodFinishes
+      apyReward.rewardRates = rewardRates
+      apyReward.rewardForPeriods = rewardForPeriods
+      apyReward.apr = apr
+      apyReward.apy = apy
+      apyReward.tvlUsd = tvlUsd
+      apyReward.prices = prices
+      // if (price.gt(BigDecimal.zero())) {
+      //
+      //   const tokenPrice = getPriceForCoin(Address.fromString(pool.rewardTokens[0]), block.number.toI32())
+      //   const period = (periodFinish.minus(block.timestamp)).toBigDecimal()
+      //
+      //   if (!tokenPrice.isZero() && !rewardRate.isZero()) {
+      //     apyReward.rewardForPeriod = rewardRate.divDecimal(BD_18).times(tokenPrice.divDecimal(BD_18)).times(period)
+      //   }
+      //
+      //   const tvlUsd = calculateTvlUsd(Address.fromString(vault.id), price)
+      //   apyReward.tvlUsd = tvlUsd
+      //   const apr = calculateApr(period, apyReward.rewardForPeriod, tvlUsd)
+      //   if (!(BigDecimal.compare(apr, BD_ZERO) == 0)) {
+      //     const apyValue = calculateApy(apr)
+      //     apyReward.apr = apr
+      //     apyReward.apy = apyValue
+      //   }
+      // }
+
+      if (apyReward.apy.le(BigDecimal.zero())) {
+        // don't save 0 APY
+        return;
+      }
+      apyReward.vault = vault.id
+      apyReward.timestamp = block.timestamp
+      apyReward.createAtBlock = block.number
+      apyReward.save()
     }
   }
 }

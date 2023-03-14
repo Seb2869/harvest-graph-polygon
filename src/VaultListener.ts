@@ -1,13 +1,25 @@
-import { Deposit, Withdraw } from "../generated/templates/VaultListener/VaultContract";
-import { createTvl } from "./utils/Tvl";
-import { saveApyAutoCompound } from "./utils/Apy";
+import { PotPoolListener } from "../generated/templates";
+import { createUserBalance } from "./types/UserBalance";
+import { isPool } from "./utils/PotPoolUtils";
+import { loadOrCreatePotPool } from "./types/PotPool";
+import { createTvl } from "./types/Tvl";
+import { Invest, Approval, Transfer } from "../generated/Controller/VaultContract";
 
-export function handleDeposit(event: Deposit): void {
+export function handleTransfer(event: Transfer): void {
+  const to = event.params.to
+  if (isPool(to)) {
+    loadOrCreatePotPool(to, event.block)
+    PotPoolListener.create(to)
+  }
   createTvl(event.address, event.transaction, event.block)
-  saveApyAutoCompound(event.address, event.block, event.transaction)
+  createUserBalance(event.address, event.params.value, event.params.from, event.transaction, event.block, false)
+  createUserBalance(event.address, event.params.value, event.params.to, event.transaction, event.block, true)
 }
 
-export function handleWithdraw(event: Withdraw): void {
+export function handleInvest(event: Invest): void {
   createTvl(event.address, event.transaction, event.block)
-  saveApyAutoCompound(event.address, event.block, event.transaction)
+}
+
+export function handleApproval(event: Approval): void {
+  createTvl(event.address, event.transaction, event.block)
 }

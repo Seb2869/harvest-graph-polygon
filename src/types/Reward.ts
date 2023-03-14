@@ -1,5 +1,5 @@
-import { Pool, Reward, Vault } from "../../generated/schema";
-import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Pool, Reward } from "../../generated/schema";
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
 
 export function saveReward(
   poolAddress: Address,

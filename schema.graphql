@@ -1,6 +1,8 @@
 type Controller @entity {
   "controller address"
   id: ID!
+  governance: String!
+  store: String!
   createAtBlock: BigInt!
   timestamp: BigInt!
 }
@@ -19,6 +21,7 @@ type Vault @entity {
   underlying: Token!
   lastShareTimestamp: BigInt!
   lastSharePrice: BigInt!
+  skipFirstApyReward: Boolean
 }
 
 type Strategy @entity {
@@ -105,11 +108,10 @@ type ApyReward @entity {
   vault: Vault!
   apy: BigDecimal!
   apr: BigDecimal!
-  priceUnderlying: BigDecimal!
-  periodFinish: BigInt!
-  rewardAmount: BigInt!
-  rewardRate: BigInt!
-  rewardForPeriod: BigDecimal!
+  prices: [BigDecimal!]!
+  periodFinishes: [BigInt!]!
+  rewardRates: [BigInt!]!
+  rewardForPeriods: [BigDecimal!]!
   tvlUsd: BigDecimal!
   timestamp: BigInt!
   createAtBlock: BigInt!
@@ -134,12 +136,44 @@ type AutoStake @entity {
   createAtBlock: BigInt!
 }
 
-type UniswapV3Pool @entity {
-  "symbol-symbol-fee"
+type UserBalance @entity {
+  "vault-user"
   id: ID!
-  tokenA: Token!
-  tokenB: Token!
-  pool: String!
+  vault: Vault!
+  userAddress: String!
+  value: BigDecimal!
   timestamp: BigInt!
   createAtBlock: BigInt!
+}
+
+type UserBalanceHistory @entity {
+  "tx-user"
+  id: ID!
+  userAddress: String!
+  transactionType: TransactionType!
+  vault: Vault!
+  "Amount balance in user address"
+  value: BigDecimal!
+  #  vaultBalance: BigDecimal!
+  #  poolBalance: BigDecimal!
+  sharePrice: BigInt!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+
+type UserTransaction @entity {
+  "tx"
+  id: ID!
+  userAddress: String!
+  transactionType: TransactionType!
+  vault: Vault!
+  "Amount in transaction"
+  value: BigInt!
+  sharePrice: BigInt!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+enum TransactionType {
+  Deposit
+  Withdraw
 }
