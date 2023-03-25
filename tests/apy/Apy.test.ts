@@ -123,4 +123,22 @@ describe("Apy tests", () => {
     assert.assertTrue(apr.equals(BigDecimal.fromString('0.13361067914693112')))
     assert.assertTrue(apy.equals(BigDecimal.fromString('0.1336997331095886456384913242857')))
   })
+
+  test('Calculate apy reward miFARM for vault GNOME-ETH', ()=> {
+    const tvlUsd = BigDecimal.fromString('111000')
+    const period = BigDecimal.fromString('299250')
+    const rewardRate = BigDecimal.fromString('2928161827841990705')
+    const rewardTokenPrice = BigDecimal.fromString('0.005')
+    const rewardUsdForPeriod = rewardRate.div(BD_18).times(period).times(rewardTokenPrice)
+    // const rewardUsdForPeriod = BigDecimal.fromString('92')
+
+    const apr = calculateApr(period, rewardUsdForPeriod, tvlUsd)
+    const apy = calculateApy(apr)
+
+    log.log(log.Level.INFO, `rewardUsdForPeriod = ${rewardUsdForPeriod}`)
+    log.log(log.Level.INFO, `apr = ${apr}`)
+    log.log(log.Level.INFO, `apy = ${apy}`)
+    assert.assertTrue(apr.equals(BigDecimal.fromString('416.2421608031820084329189189189191')))
+    assert.assertTrue(apy.equals(BigDecimal.fromString('6173.16816144901170954833370558117')))
+  })
 })

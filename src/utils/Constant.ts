@@ -75,7 +75,7 @@ export const BALANCER_CONTRACT_NAME = 'Balancer'.toLowerCase()
 export const CURVE_CONTRACT_NAME = 'Curve.fi'.toLowerCase()
 export const F_UNI_V3_CONTRACT_NAME = 'fUniV3'.toLowerCase()
 export const MESH_SWAP_CONTRACT = 'Meshswap'.toLowerCase()
-
+export const TETU_CONTRACT = 'Tetu'.toLowerCase()
 
 export const UNISWAP_V3_FEES = [
   '3000',
@@ -83,6 +83,9 @@ export const UNISWAP_V3_FEES = [
   '8000',
   '10000'
 ]
+
+export const AM_USD_BALANCER = Address.fromString('0xb9ae7a44f9060a80bf436d48c4d7ad42d15715ee')
+export const BB_AM_USD_BALANCER = Address.fromString('0x787dcb101a0fd5c54a993dcead38e2c6bb98b66e')
 
 export const FARM_TOKEN_MAINNET = Address.fromString('0xa0246c9032bc3a600820415ae600c6388619a14d')
 export const FARM_TOKEN_MATIC = Address.fromString('0xab0b2ddb9c7e440fac8e140a89c0dbcbf2d7bbff')
@@ -92,6 +95,11 @@ export const ORACLE_ADDRESS_MAINNET_SECOND = Address.fromString('0x1358c91D5b25D
 export const ORACLE_ADDRESS_MATIC = Address.fromString('0x0E74303d0D18884Ce2CEb3670e72686645c4f38B');
 
 export const NULL_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
+export const BIG_APY_BD = BigDecimal.fromString('2000');
+
+export const JBRL = '0xf2f77FE7b8e66571E0fca7104c4d670BF1C8d722'.toLowerCase();
+export const BRZ = Address.fromString('0x491a4eB4f1FC3BfF8E1d2FC856a6A46663aD556f');
+
 
 export function isStableCoin(address: string): boolean {
   if (dataSource.network() == 'mainnet') {
@@ -100,6 +108,10 @@ export function isStableCoin(address: string): boolean {
     return STABLE_COIN_ARRAY_MATIC.join(' ').includes(address) == true
   }
   return false
+}
+
+export function isBrl(address: string): boolean {
+  return address == JBRL;
 }
 
 export function isPsAddress(address: string): boolean {

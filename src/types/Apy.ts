@@ -1,12 +1,12 @@
 import { ApyAutoCompound, ApyReward, Pool, Vault } from "../../generated/schema";
-import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, ethereum, log } from "@graphprotocol/graph-ts";
 import { getPriceByVault, getPriceForCoin } from "../utils/PriceUtils";
 import {
   BD_18,
   BD_ONE,
   BD_ONE_HUNDRED,
   BD_TEN,
-  BD_ZERO,
+  BD_ZERO, BIG_APY_BD,
   getFarmToken,
   isPsAddress, NULL_ADDRESS,
   SECONDS_OF_YEAR,
@@ -149,6 +149,13 @@ export function saveApyReward(
       apyReward.vault = vault.id
       apyReward.timestamp = block.timestamp
       apyReward.createAtBlock = block.number
+
+      if (apyReward.apy.le(BigDecimal.zero()) || apyReward.apy.gt(BIG_APY_BD)) {
+        // don't save 0 APY && more 2000
+        log.log(log.Level.ERROR, `Can not save APY < 0 OR APY > 2000 for vault ${vault.id}`)
+        return;
+      }
+
       apyReward.save()
     }
   }
@@ -165,6 +172,12 @@ export function calculateAndSaveApyAutoCompound(id: string, diffSharePrice: BigD
     apyAutoCompound.vault = vaultAddress
     apyAutoCompound.diffSharePrice = diffSharePrice
     apyAutoCompound.diffTimestamp = diffTimestamp.toBigDecimal()
+
+    if (apyAutoCompound.apy.le(BigDecimal.zero()) || apyAutoCompound.apy.gt(BIG_APY_BD)) {
+      // don't save 0 APY && more 2000
+      log.log(log.Level.ERROR, `Can not save APY < 0 OR APY > 2000 for vault ${vaultAddress}`)
+      return BigDecimal.zero();
+    }
     apyAutoCompound.save()
   }
   return apyAutoCompound.apr

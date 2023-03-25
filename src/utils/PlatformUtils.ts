@@ -1,9 +1,12 @@
 import {
-  BALANCER_CONTRACT_NAME,
+  AM_USD_BALANCER,
+  BALANCER_CONTRACT_NAME, BB_AM_USD_BALANCER,
   CURVE_CONTRACT_NAME,
   F_UNI_V3_CONTRACT_NAME,
-  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT
+  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, TETU_CONTRACT
 } from "./Constant";
+import { Address } from "@graphprotocol/graph-ts";
+import { WeightedPool2TokensContract } from "../../generated/Controller/WeightedPool2TokensContract";
 
 export function isLpUniPair(name: string): boolean {
   for (let i=0;i<LP_UNI_PAIR_CONTRACT_NAME.length;i++) {
@@ -42,4 +45,20 @@ export function isMeshSwap(name: string): boolean {
     return true
   }
   return false
+}
+
+export function isTetu(name: string): boolean {
+  if (name.toLowerCase().startsWith(TETU_CONTRACT)) {
+    return true;
+  }
+  return false;
+}
+
+export function checkBalancer(address: Address): boolean {
+  const contract = WeightedPool2TokensContract.bind(address);
+  return !contract.try_getPoolId().reverted
+}
+
+export function isAmUsd(address: Address): boolean {
+  return address == AM_USD_BALANCER || address == BB_AM_USD_BALANCER;
 }

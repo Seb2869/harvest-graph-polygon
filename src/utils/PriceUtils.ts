@@ -4,13 +4,13 @@ import {
   BALANCER_CONTRACT_NAME,
   BD_18,
   BD_ONE,
-  BD_TEN,
-  BI_18,
+  BD_TEN, BD_ZERO,
+  BI_18, BRZ,
   CURVE_CONTRACT_NAME,
   DEFAULT_DECIMAL,
   DEFAULT_PRICE,
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
-  getOracleAddress, isPsAddress, isStableCoin,
+  getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
   NULL_ADDRESS,
 } from "./Constant";
@@ -21,15 +21,20 @@ import { BalancerVaultContract } from "../../generated/templates/VaultListener/B
 import { ERC20 } from "../../generated/Controller/ERC20";
 import { CurveVaultContract } from "../../generated/templates/VaultListener/CurveVaultContract";
 import { CurveMinterContract } from "../../generated/templates/VaultListener/CurveMinterContract";
-import { fetchContractDecimal } from "./ERC20Utils";
+import { fetchContractDecimal, fetchContractName } from "./ERC20Utils";
 import { pow } from "./MathUtils";
 import { MeshSwapContract } from "../../generated/Controller1/MeshSwapContract";
-import { isBalancer, isCurve, isLpUniPair, isMeshSwap } from "./PlatformUtils";
+import { checkBalancer, isAmUsd, isBalancer, isCurve, isLpUniPair, isMeshSwap, isTetu } from "./PlatformUtils";
+import { fetchUnderlyingAddress } from "./VaultUtils";
 
 
-export function getPriceForCoin(address: Address, block: number): BigInt {
-  if (isStableCoin(address.toHex())) {
+export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
+  if (isStableCoin(reqAddress.toHex())) {
     return BI_18
+  }
+  let address = reqAddress
+  if (isBrl(reqAddress.toHex())) {
+    address = BRZ;
   }
   const oracleAddress = getOracleAddress(block)
   if (oracleAddress != NULL_ADDRESS) {
@@ -48,6 +53,9 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
 
   if (isPsAddress(vault.id)) {
     return getPriceForCoin(getFarmToken(), block).divDecimal(BD_18)
+  }
+  if (isAmUsd(Address.fromString(vault.id))) {
+    return BD_ONE;
   }
   const underlyingAddress = vault.underlying
 
@@ -196,13 +204,30 @@ export function getPriceForBalancer(underlying: string, block: number): BigDecim
 
   let price = BigDecimal.zero()
   for (let i=0;i<tokenInfo.getTokens().length;i++) {
-    const tokenPrice = getPriceForCoin(tokenInfo.getTokens()[i], block).divDecimal(BD_18)
+    const tokenAddress = tokenInfo.getTokens()[i]
+    const name = fetchContractName(tokenAddress)
     const tryDecimals = ERC20.bind(tokenInfo.getTokens()[i]).try_decimals()
     let decimal = DEFAULT_DECIMAL
     if (!tryDecimals.reverted) {
       decimal = tryDecimals.value
     }
     const balance = normalizePrecision(tokenInfo.getBalances()[i], BigInt.fromI32(decimal)).toBigDecimal()
+
+    let tokenPrice = BD_ZERO;
+
+    if (tokenAddress == Address.fromString(underlying)) {
+      // TODO check price, if we will skip
+      continue;
+    }
+
+    if (checkBalancer(tokenAddress)) {
+      tokenPrice = getPriceForBalancer(tokenAddress.toString(), block);
+    } else if (isTetu(name)){
+      tokenPrice = getPriceByAddress(tokenAddress, block);
+    } else {
+      tokenPrice = getPriceForCoin(tokenAddress, block).divDecimal(BD_18)
+    }
+
     price = price.plus(balance.times(tokenPrice))
   }
 
@@ -253,4 +278,48 @@ export function getPriceFotMeshSwap(underlyingAddress: string, block: number): B
         .divDecimal(BD_18)
         .times(secondCoin)
     )
+}
+
+export function getPriceByAddress(address: Address, block: number): BigDecimal {
+
+  if (isPsAddress(address.toString())) {
+    return getPriceForCoin(getFarmToken(), block).divDecimal(BD_18)
+  }
+  const underlyingAddress = fetchUnderlyingAddress(address).toString()
+
+  let price = getPriceForCoin(Address.fromString(underlyingAddress), block)
+  if (!price.isZero()) {
+    return price.divDecimal(BD_18)
+  }
+
+  const underlying = Token.load(underlyingAddress)
+  if (underlying != null) {
+    if (isLpUniPair(underlying.name)) {
+      const tempPrice = getPriceForCoin(Address.fromString(underlyingAddress), block)
+      if (tempPrice.gt(DEFAULT_PRICE)) {
+        return tempPrice.divDecimal(BD_18)
+      }
+      return getPriceLpUniPair(underlying.id, block)
+    }
+
+    if (isBalancer(underlying.name)) {
+      return getPriceForBalancer(underlying.id, block)
+    }
+
+    if (isCurve(underlying.name)) {
+      const tempPrice = getPriceForCoin(Address.fromString(underlying.id), block)
+      if (!tempPrice.isZero()) {
+        return tempPrice.divDecimal(BD_18)
+      }
+
+      return getPriceForCurve(underlyingAddress, block)
+    }
+
+    if (isMeshSwap(underlying.name)) {
+      return getPriceFotMeshSwap(underlyingAddress, block)
+    }
+  }
+
+  return BigDecimal.zero()
+
 }
