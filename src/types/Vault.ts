@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
 import { fetchContractDecimal, fetchContractName, fetchContractSymbol } from "../utils/ERC20Utils";
 import { loadOrCreateERC20Token } from "./Token";
 import { VaultListener } from "../../generated/templates";
@@ -25,6 +25,7 @@ export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, 
     vault.lastShareTimestamp = BigInt.zero()
     vault.lastSharePrice = BigInt.zero()
     vault.skipFirstApyReward = true
+    vault.tvl = BigDecimal.zero()
     vault.save();
     VaultListener.create(vaultAddress)
   }

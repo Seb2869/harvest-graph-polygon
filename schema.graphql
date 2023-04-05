@@ -19,6 +19,7 @@ type Vault @entity {
   active: Boolean
   pool: Pool
   underlying: Token!
+  tvl: BigDecimal!
   lastShareTimestamp: BigInt!
   lastSharePrice: BigInt!
   skipFirstApyReward: Boolean
@@ -176,4 +177,21 @@ type UserTransaction @entity {
 enum TransactionType {
   Deposit
   Withdraw
+}
+
+type TotalTvl @entity{
+
+  id: ID!
+
+  value: BigDecimal!
+}
+
+type TotalTvlHistory @entity{
+
+  id: ID!
+
+  value: BigDecimal!
+
+  timestamp: BigInt!
+  createAtBlock: BigInt!
 }
