@@ -12,7 +12,7 @@ import {
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
-  NULL_ADDRESS,
+  NULL_ADDRESS, ORACLE_PRICE_TETU,
 } from "./Constant";
 import { Token, Vault } from "../../generated/schema";
 import { UniswapV2PairContract } from "../../generated/ExclusiveRewardPoolListener/UniswapV2PairContract";
@@ -24,8 +24,20 @@ import { CurveMinterContract } from "../../generated/templates/VaultListener/Cur
 import { fetchContractDecimal, fetchContractName } from "./ERC20Utils";
 import { pow } from "./MathUtils";
 import { MeshSwapContract } from "../../generated/Controller1/MeshSwapContract";
-import { checkBalancer, isAmUsd, isBalancer, isCurve, isLpUniPair, isMeshSwap, isTetu } from "./PlatformUtils";
+import {
+  checkBalancer,
+  isAmUsd,
+  isBalancer,
+  isCurve,
+  isLpUniPair,
+  isMeshSwap,
+  isQuickSwapUniV3,
+  isTetu
+} from "./PlatformUtils";
 import { fetchUnderlyingAddress } from "./VaultUtils";
+import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
+import { QuickSwapPoolContract } from "../../generated/Controller1/QuickSwapPoolContract";
+import { TetuPriceCalculatorContract } from "../../generated/Controller1/TetuPriceCalculatorContract";
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
@@ -89,6 +101,10 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
 
     if (isMeshSwap(underlying.name)) {
       return getPriceFotMeshSwap(underlyingAddress, block)
+    }
+
+    if (isQuickSwapUniV3(underlying.name, Address.fromString(underlying.id))) {
+      return getPriceForQuickSwapUniV3(Address.fromString(underlying.id), block)
     }
   }
 
@@ -321,5 +337,68 @@ export function getPriceByAddress(address: Address, block: number): BigDecimal {
   }
 
   return BigDecimal.zero()
+}
 
+export function getPriceForQuickSwapUniV3(address: Address, block: number): BigDecimal {
+
+  const vault = QuickSwapVaultContract.bind(address)
+  const tryPool = vault.try_pool()
+  if (tryPool == null) {
+    return BigDecimal.zero()
+  }
+  const poolAddress = tryPool.value
+  const pool = QuickSwapPoolContract.bind(poolAddress)
+
+  const liquidity = pool.liquidity()
+  const token0 = ERC20.bind(pool.token0())
+  const token1 = ERC20.bind(pool.token1())
+  const balanceToken0 = token0.balanceOf(poolAddress)
+  const balanceToken1 = token1.balanceOf(poolAddress)
+  const priceToken0 = getPriceForCoin(token0._address, block)
+  const priceToken1 = getPriceForCoin(token1._address, block)
+  if (priceToken0.isZero()
+    || liquidity.isZero()
+    || token0.decimals() == 0
+    || token1.decimals() == 0
+    || priceToken1.isZero()
+    || balanceToken1.isZero()
+    || balanceToken0.isZero()) {
+    return BigDecimal.zero()
+  }
+
+
+  const balance = priceToken0.divDecimal(BD_18)
+    .times(balanceToken0.divDecimal(pow(BD_TEN, token0.decimals())))
+    .plus(
+      priceToken1.divDecimal(BD_18)
+        .times(balanceToken1.divDecimal(pow(BD_TEN, token1.decimals()))))
+
+
+  const decimal0 = token0.decimals()
+  const decimal1 = token1.decimals()
+
+  let decimal = BD_18
+
+  if (decimal0 > decimal1) {
+    decimal = pow(BD_TEN, decimal0 - decimal1)
+  } else if (decimal0 < decimal1) {
+    decimal = pow(BD_TEN, decimal1 - decimal0)
+  }
+
+  const poolPrice =  balance.div(liquidity.divDecimal(
+    decimal
+  ))
+
+  const tryTS = vault.try_totalSupply()
+  if (tryTS.reverted) {
+    return BigDecimal.zero()
+  }
+
+  return tryTS.value.divDecimal(BD_18).times(poolPrice)
+}
+
+export function getPriceForTetuVault(address: Address): BigDecimal {
+  const contract = TetuPriceCalculatorContract.bind(ORACLE_PRICE_TETU)
+  const tryPrice = contract.try_getPriceWithDefaultOutput(address)
+  return tryPrice.reverted ? BigDecimal.zero() : tryPrice.value.divDecimal(BD_18)
 }

@@ -71,11 +71,17 @@ export const LP_UNI_PAIR_CONTRACT_NAME = [
   'Kyber'.toLowerCase(),
   'ApeSwapFinance'.toLowerCase(),
 ]
-export const BALANCER_CONTRACT_NAME = 'Balancer'.toLowerCase()
+export const BALANCER_CONTRACT_NAME = [
+  'Balancer'.toLowerCase(),
+  'frxETH-WETH'.toLowerCase(),
+  '20WMATIC-80SPHERE'.toLowerCase(),
+  '20WETH-80BAL'.toLowerCase()
+]
 export const CURVE_CONTRACT_NAME = 'Curve.fi'.toLowerCase()
 export const F_UNI_V3_CONTRACT_NAME = 'fUniV3'.toLowerCase()
 export const MESH_SWAP_CONTRACT = 'Meshswap'.toLowerCase()
 export const TETU_CONTRACT = 'Tetu'.toLowerCase()
+export const QUICK_SWAP_CONTRACT = 'a'.toLowerCase()
 
 export const UNISWAP_V3_FEES = [
   '3000',
@@ -93,6 +99,8 @@ export const FARM_TOKEN_MATIC = Address.fromString('0xab0b2ddb9c7e440fac8e140a89
 export const ORACLE_ADDRESS_MAINNET_FIRST = Address.fromString('0x48DC32eCA58106f06b41dE514F29780FFA59c279');
 export const ORACLE_ADDRESS_MAINNET_SECOND = Address.fromString('0x1358c91D5b25D3eDAc2b7B26A619163d78f1717d');
 export const ORACLE_ADDRESS_MATIC = Address.fromString('0x0E74303d0D18884Ce2CEb3670e72686645c4f38B');
+
+export const ORACLE_PRICE_TETU = Address.fromString('0x0B62ad43837A69Ad60289EEea7C6e907e759F6E8')
 
 export const NULL_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 export const BIG_APY_BD = BigDecimal.fromString('2000');
