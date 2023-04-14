@@ -86,6 +86,10 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
       return getPriceLpUniPair(underlying.id, block)
     }
 
+    if (isTetu(underlying.name)) {
+      return getPriceForTetu(Address.fromString(underlying.id))
+    }
+
     if (isBalancer(underlying.name)) {
       return getPriceForBalancer(underlying.id, block)
     }
@@ -110,6 +114,16 @@ export function getPriceByVault(vault: Vault, block: number): BigDecimal {
 
   return BigDecimal.zero()
 
+}
+
+export function getPriceForTetu(address: Address): BigDecimal {
+  const price = TetuPriceCalculatorContract.bind(ORACLE_PRICE_TETU)
+  let tryGetPrice = price.try_getPriceWithDefaultOutput(address)
+  if (tryGetPrice.reverted) {
+    log.log(log.Level.WARNING, `Can not get tetu price for address ${address.toHex()}`)
+    return BigDecimal.zero()
+  }
+  return tryGetPrice.value.divDecimal(BD_18)
 }
 
 export function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal {
