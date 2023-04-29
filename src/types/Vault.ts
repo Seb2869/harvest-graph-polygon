@@ -5,6 +5,7 @@ import { VaultListener } from "../../generated/templates";
 import { loadOrCreateStrategy } from "./Strategy";
 import { fetchUnderlyingAddress } from "../utils/VaultUtils";
 import { Vault } from "../../generated/schema";
+import { pushVault } from './TotalTvlUtils';
 
 export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, strategyAddress: string = 'unknown'): Vault {
   let vault = Vault.load(vaultAddress.toHex())
@@ -28,6 +29,7 @@ export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, 
     vault.tvl = BigDecimal.zero()
     vault.save();
     VaultListener.create(vaultAddress)
+    pushVault(vault.id, block)
   }
 
   return vault;

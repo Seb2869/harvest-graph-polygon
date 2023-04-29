@@ -11,15 +11,15 @@ export function handleTransfer(event: Transfer): void {
     loadOrCreatePotPool(to, event.block)
     PotPoolListener.create(to)
   }
-  createTvl(event.address, event.transaction, event.block)
+  createTvl(event.address, event.block)
   createUserBalance(event.address, event.params.value, event.params.from, event.transaction, event.block, false)
   createUserBalance(event.address, event.params.value, event.params.to, event.transaction, event.block, true)
 }
 
 export function handleInvest(event: Invest): void {
-  createTvl(event.address, event.transaction, event.block)
+  createTvl(event.address, event.block)
 }
 
 export function handleApproval(event: Approval): void {
-  createTvl(event.address, event.transaction, event.block)
+  createTvl(event.address, event.block)
 }

@@ -195,3 +195,24 @@ type TotalTvlHistory @entity{
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
+
+type TotalTvlHistoryV2 @entity{
+
+  id: ID!
+
+  value: BigDecimal!
+
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+
+type TotalTvlUtil @entity{
+  # id is 1
+  id: ID!
+
+  vaults: [String!]!
+  lastTimestampUpdate: BigInt!
+
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}

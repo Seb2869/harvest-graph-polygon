@@ -226,6 +226,9 @@ export function getPriceLpUniPair(underlyingAddress: string, block: number): Big
 }
 
 export function getPriceForBalancer(underlying: string, block: number): BigDecimal {
+  if ('0x0000000000000000000000000000000000000000' == underlying) {
+    return BigDecimal.zero();
+  }
   const balancer = WeightedPool2TokensContract.bind(Address.fromString(underlying))
   const poolId = balancer.getPoolId()
   const totalSupply = balancer.totalSupply()
@@ -252,7 +255,7 @@ export function getPriceForBalancer(underlying: string, block: number): BigDecim
 
     if (checkBalancer(tokenAddress)) {
       tokenPrice = getPriceForBalancer(tokenAddress.toString(), block);
-    } else if (isTetu(name)){
+    } else if (isTetu(name)) {
       tokenPrice = getPriceByAddress(tokenAddress, block);
     } else {
       tokenPrice = getPriceForCoin(tokenAddress, block).divDecimal(BD_18)

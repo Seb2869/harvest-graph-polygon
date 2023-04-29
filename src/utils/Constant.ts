@@ -15,6 +15,10 @@ export const BD_ZERO = BigDecimal.fromString('0')
 export const BD_ONE = BigDecimal.fromString('1')
 export const BD_TEN = BigDecimal.fromString('10')
 export const BD_ONE_HUNDRED = BigDecimal.fromString('100')
+export const EVERY_24_HOURS = 86400;
+export const BI_EVERY_24_HOURS = BigInt.fromString('86400');
+export const MODULE_RESULT = 75600;
+export const CONST_ID = '1';
 
 export const STABLE_COIN_ARRAY_MAINNET = [
   '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(),

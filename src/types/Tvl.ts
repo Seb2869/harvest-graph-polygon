@@ -1,16 +1,16 @@
 import { Address, BigDecimal, ethereum } from "@graphprotocol/graph-ts";
-import { TotalTvl, TotalTvlHistory, Tvl, Vault } from "../../generated/schema";
+import { TotalTvl, TotalTvlHistory, TotalTvlHistoryV2, Tvl, Vault } from '../../generated/schema';
 import { fetchContractTotalSupply } from "../utils/ERC20Utils";
 import { BD_TEN, BD_ZERO } from "../utils/Constant";
 import { pow } from "../utils/MathUtils";
 import { fetchPricePerFullShare } from "../utils/VaultUtils";
 import { getPriceByVault } from "../utils/PriceUtils";
 
-export function createTvl(address: Address, transaction: ethereum.Transaction, block: ethereum.Block): void {
+export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
   const vaultAddress = address;
   const vault = Vault.load(vaultAddress.toHex())
   if (vault != null) {
-    const id = `${transaction.hash.toHex()}-${vaultAddress.toHex()}`
+    const id = `${block.number.toString()}-${vaultAddress.toHex()}`
     let tvl = Tvl.load(id)
     if (tvl == null) {
       tvl = new Tvl(id);
@@ -41,7 +41,9 @@ export function createTvl(address: Address, transaction: ethereum.Transaction, b
       vault.tvl = tvl.value
       vault.save()
     }
+    return tvl;
   }
+  return null;
 }
 
 export function createTotalTvl(oldValue:BigDecimal, newValue: BigDecimal, id: string, block: ethereum.Block): void {
@@ -61,6 +63,18 @@ export function createTotalTvl(oldValue:BigDecimal, newValue: BigDecimal, id: st
     totalTvlHistory = new TotalTvlHistory(id)
 
     totalTvlHistory.value = totalTvl.value
+    totalTvlHistory.timestamp = block.timestamp
+    totalTvlHistory.createAtBlock = block.number
+    totalTvlHistory.save()
+  }
+}
+
+export function createTvlV2(totalTvl: BigDecimal, block: ethereum.Block): void {
+  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toHex())
+  if (totalTvlHistory == null) {
+    totalTvlHistory = new TotalTvlHistoryV2(block.number.toHex())
+
+    totalTvlHistory.value = totalTvl
     totalTvlHistory.timestamp = block.timestamp
     totalTvlHistory.createAtBlock = block.number
     totalTvlHistory.save()
