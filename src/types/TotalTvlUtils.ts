@@ -33,7 +33,7 @@ export function createTotalTvl(block: ethereum.Block): void {
   for (let i = 0; i < array.length; i++) {
     const tvl = createTvl(Address.fromString(array[i]), block)
     if (tvl) {
-      totalTvl.plus(tvl.value)
+      totalTvl = totalTvl.plus(tvl.value)
     }
   }
   createTvlV2(totalTvl, block);

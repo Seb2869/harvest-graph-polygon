@@ -70,9 +70,9 @@ export function createTotalTvl(oldValue:BigDecimal, newValue: BigDecimal, id: st
 }
 
 export function createTvlV2(totalTvl: BigDecimal, block: ethereum.Block): void {
-  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toHex())
+  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toHexString())
   if (totalTvlHistory == null) {
-    totalTvlHistory = new TotalTvlHistoryV2(block.number.toHex())
+    totalTvlHistory = new TotalTvlHistoryV2(block.number.toHexString())
 
     totalTvlHistory.value = totalTvl
     totalTvlHistory.timestamp = block.timestamp

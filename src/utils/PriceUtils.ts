@@ -41,11 +41,11 @@ import { TetuPriceCalculatorContract } from "../../generated/Controller1/TetuPri
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
-  if (isStableCoin(reqAddress.toHex())) {
+  if (isStableCoin(reqAddress.toHexString())) {
     return BI_18
   }
   let address = reqAddress
-  if (isBrl(reqAddress.toHex())) {
+  if (isBrl(reqAddress.toHexString())) {
     address = BRZ;
   }
   const oracleAddress = getOracleAddress(block)
@@ -53,7 +53,7 @@ export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
     const oracle = OracleContract.bind(oracleAddress)
     let tryGetPrice = oracle.try_getPrice(address)
     if (tryGetPrice.reverted) {
-      log.log(log.Level.WARNING, `Can not get price on block ${block} for address ${address.toHex()}`)
+      log.log(log.Level.WARNING, `Can not get price on block ${block} for address ${address.toHexString()}`)
       return DEFAULT_PRICE
     }
     return tryGetPrice.value;
@@ -120,7 +120,7 @@ export function getPriceForTetu(address: Address): BigDecimal {
   const price = TetuPriceCalculatorContract.bind(ORACLE_PRICE_TETU)
   let tryGetPrice = price.try_getPriceWithDefaultOutput(address)
   if (tryGetPrice.reverted) {
-    log.log(log.Level.WARNING, `Can not get tetu price for address ${address.toHex()}`)
+    log.log(log.Level.WARNING, `Can not get tetu price for address ${address.toHexString()}`)
     return BigDecimal.zero()
   }
   return tryGetPrice.value.divDecimal(BD_18)
@@ -254,7 +254,7 @@ export function getPriceForBalancer(underlying: string, block: number): BigDecim
     }
 
     if (checkBalancer(tokenAddress)) {
-      tokenPrice = getPriceForBalancer(tokenAddress.toString(), block);
+      tokenPrice = getPriceForBalancer(tokenAddress.toHexString(), block);
     } else if (isTetu(name)) {
       tokenPrice = getPriceByAddress(tokenAddress, block);
     } else {
@@ -315,10 +315,10 @@ export function getPriceFotMeshSwap(underlyingAddress: string, block: number): B
 
 export function getPriceByAddress(address: Address, block: number): BigDecimal {
 
-  if (isPsAddress(address.toString())) {
+  if (isPsAddress(address.toHexString())) {
     return getPriceForCoin(getFarmToken(), block).divDecimal(BD_18)
   }
-  const underlyingAddress = fetchUnderlyingAddress(address).toString()
+  const underlyingAddress = fetchUnderlyingAddress(address).toHexString()
 
   let price = getPriceForCoin(Address.fromString(underlyingAddress), block)
   if (!price.isZero()) {

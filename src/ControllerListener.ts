@@ -1,7 +1,15 @@
 import { SharePrice, Strategy, Vault } from "../generated/schema";
 import { loadOrCreateVault } from "./types/Vault";
 import { pow, powBI } from "./utils/MathUtils";
-import { BD_TEN, BI_EVERY_24_HOURS, BI_TEN, EVERY_24_HOURS, MODULE_RESULT } from './utils/Constant';
+import {
+  BD_TEN,
+  BI_EVERY_24_HOURS, BI_EVERY_7_DAYS,
+  BI_TEN,
+  EVERY_24_HOURS,
+  EVERY_7_DAYS,
+  MODULE_RESULT,
+  MODULE_RESULT_V2,
+} from './utils/Constant';
 import { SharePriceChangeLog } from "../generated/Controller/ControllerContract";
 import { Address, ethereum } from '@graphprotocol/graph-ts';
 import { calculateAndSaveApyAutoCompound } from "./types/Apy";
@@ -42,9 +50,9 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
 
 export function handleBlock(block: ethereum.Block): void {
   const tvlUtils = getTvlUtils(block)
-  if (block.timestamp.toI32() % EVERY_24_HOURS == MODULE_RESULT) {
+  if (block.timestamp.toI32() % EVERY_7_DAYS == MODULE_RESULT_V2) {
     createTotalTvl(block)
-  } else if (block.timestamp.ge(tvlUtils.lastTimestampUpdate.plus(BI_EVERY_24_HOURS))) {
+  } else if (block.timestamp.ge(tvlUtils.lastTimestampUpdate.plus(BI_EVERY_7_DAYS))) {
     createTotalTvl(block)
   }
 }
