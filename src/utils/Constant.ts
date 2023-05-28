@@ -77,12 +77,15 @@ export const LP_UNI_PAIR_CONTRACT_NAME = [
   'Pancake'.toLowerCase(),
   'Kyber'.toLowerCase(),
   'ApeSwapFinance'.toLowerCase(),
+  'aw'.toLowerCase()
 ]
 export const BALANCER_CONTRACT_NAME = [
   'Balancer'.toLowerCase(),
   'frxETH-WETH'.toLowerCase(),
   '20WMATIC-80SPHERE'.toLowerCase(),
-  '20WETH-80BAL'.toLowerCase()
+  '20WETH-80BAL'.toLowerCase(),
+  '20USDC-80TNGBL'.toLowerCase(),
+  '2eur (PAR)'.toLowerCase()
 ]
 export const CURVE_CONTRACT_NAME = 'Curve.fi'.toLowerCase()
 export const F_UNI_V3_CONTRACT_NAME = 'fUniV3'.toLowerCase()

@@ -225,13 +225,13 @@ export function getPriceLpUniPair(underlyingAddress: string, block: number): Big
     )
 }
 
-export function getPriceForBalancer(underlying: string, block: number): BigDecimal {
+export function getPriceForBalancer(underlying: string, block: number, isTest: boolean = false): BigDecimal {
   if ('0x0000000000000000000000000000000000000000' == underlying) {
     return BigDecimal.zero();
   }
   const balancer = WeightedPool2TokensContract.bind(Address.fromString(underlying))
   const poolId = balancer.getPoolId()
-  const totalSupply = balancer.totalSupply()
+  const totalSupply = balancer.totalSupply().divDecimal(BD_18)
   const vault = BalancerVaultContract.bind(balancer.getVault())
   const tokenInfo = vault.getPoolTokens(poolId)
 
@@ -244,16 +244,14 @@ export function getPriceForBalancer(underlying: string, block: number): BigDecim
     if (!tryDecimals.reverted) {
       decimal = tryDecimals.value
     }
-    const balance = normalizePrecision(tokenInfo.getBalances()[i], BigInt.fromI32(decimal)).toBigDecimal()
+    // const balance = normalizePrecision(tokenInfo.getBalances()[i], BigInt.fromI32(decimal)).toBigDecimal()
+    const balance = tokenInfo.getBalances()[i].divDecimal(pow(BD_TEN, decimal))
 
     let tokenPrice = BD_ZERO;
 
     if (tokenAddress == Address.fromString(underlying)) {
-      // TODO check price, if we will skip
-      continue;
-    }
-
-    if (checkBalancer(tokenAddress)) {
+      tokenPrice = BD_ONE;
+    } else if (!isTest && checkBalancer(tokenAddress)) {
       tokenPrice = getPriceForBalancer(tokenAddress.toHexString(), block);
     } else if (isTetu(name)) {
       tokenPrice = getPriceByAddress(tokenAddress, block);
@@ -267,7 +265,7 @@ export function getPriceForBalancer(underlying: string, block: number): BigDecim
   if (price.le(BigDecimal.zero())) {
     return price
   }
-  return price.div(totalSupply.toBigDecimal())
+  return price.div(totalSupply)
 }
 
 
