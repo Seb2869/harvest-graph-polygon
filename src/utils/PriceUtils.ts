@@ -400,7 +400,7 @@ export function getPriceForQuickSwapUniV3(address: Address, block: number): BigD
     decimal = pow(BD_TEN, decimal1 - decimal0)
   }
 
-  const poolPrice =  balance.div(liquidity.divDecimal(
+  const poolPrice = balance.div(liquidity.divDecimal(
     decimal
   ))
 

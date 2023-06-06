@@ -77,8 +77,8 @@ export const LP_UNI_PAIR_CONTRACT_NAME = [
   'Pancake'.toLowerCase(),
   'Kyber'.toLowerCase(),
   'ApeSwapFinance'.toLowerCase(),
-  'aw'.toLowerCase()
 ]
+
 export const BALANCER_CONTRACT_NAME = [
   'Balancer'.toLowerCase(),
   'frxETH-WETH'.toLowerCase(),
