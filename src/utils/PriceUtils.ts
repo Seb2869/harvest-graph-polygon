@@ -12,8 +12,8 @@ import {
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
-  NULL_ADDRESS, ORACLE_PRICE_TETU,
-} from "./Constant";
+  NULL_ADDRESS, ORACLE_PRICE_TETU, WETH,
+} from './Constant';
 import { Token, Vault } from "../../generated/schema";
 import { UniswapV2PairContract } from "../../generated/ExclusiveRewardPoolListener/UniswapV2PairContract";
 import { WeightedPool2TokensContract } from "../../generated/templates/VaultListener/WeightedPool2TokensContract";
@@ -32,8 +32,8 @@ import {
   isLpUniPair,
   isMeshSwap,
   isQuickSwapUniV3,
-  isTetu
-} from "./PlatformUtils";
+  isTetu, isWeth,
+} from './PlatformUtils';
 import { fetchUnderlyingAddress } from "./VaultUtils";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
 import { QuickSwapPoolContract } from "../../generated/Controller1/QuickSwapPoolContract";
@@ -47,6 +47,9 @@ export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
   let address = reqAddress
   if (isBrl(reqAddress.toHexString())) {
     address = BRZ;
+  }
+  if (isWeth(reqAddress)) {
+    address = WETH;
   }
   const oracleAddress = getOracleAddress(block)
   if (oracleAddress != NULL_ADDRESS) {
@@ -388,20 +391,8 @@ export function getPriceForQuickSwapUniV3(address: Address, block: number): BigD
       priceToken1.divDecimal(BD_18)
         .times(balanceToken1.divDecimal(pow(BD_TEN, token1.decimals()))))
 
-
-  const decimal0 = token0.decimals()
-  const decimal1 = token1.decimals()
-
-  let decimal = BD_18
-
-  if (decimal0 > decimal1) {
-    decimal = pow(BD_TEN, decimal0 - decimal1)
-  } else if (decimal0 < decimal1) {
-    decimal = pow(BD_TEN, decimal1 - decimal0)
-  }
-
   const poolPrice = balance.div(liquidity.divDecimal(
-    decimal
+    BD_18
   ))
 
   const tryTS = vault.try_totalSupply()

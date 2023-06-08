@@ -23,6 +23,7 @@ export const MODULE_RESULT = 75600;
 export const MODULE_RESULT_V2 = 518400;
 export const CONST_ID = '1';
 
+export const WETH = Address.fromString('0x7ceb23fd6bc0add59e62ac25578270cff1b9f619');
 export const STABLE_COIN_ARRAY_MAINNET = [
   '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(),
   '0xe9e7cea3dedca5984780bafc599bd69add087d56'.toLowerCase(),
@@ -98,6 +99,11 @@ export const UNISWAP_V3_FEES = [
   '5000',
   '8000',
   '10000'
+]
+
+export const WETH_LIST = [
+  Address.fromString('0xfcaf5a6661038732a05859cb5d544e3de00f64ba'),
+  Address.fromString('0xdf93938ab79c899bd185f5681d354bc1b1eb2146'),
 ]
 
 export const AM_USD_BALANCER = Address.fromString('0xb9ae7a44f9060a80bf436d48c4d7ad42d15715ee')

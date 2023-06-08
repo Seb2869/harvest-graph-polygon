@@ -1,7 +1,7 @@
-import { TotalTvlUtil } from '../../generated/schema';
-import { Address, BigDecimal, ethereum } from '@graphprotocol/graph-ts';
+import { TotalTvlCount, TotalTvlUtil } from '../../generated/schema';
+import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { CONST_ID } from '../utils/Constant';
-import { createTvl, createTvlV2 } from './Tvl';
+import { createTvl } from './Tvl';
 
 export function pushVault(address: string, block: ethereum.Block): void {
   const vaultUtils = getTvlUtils(block);
@@ -36,7 +36,18 @@ export function createTotalTvl(block: ethereum.Block): void {
       totalTvl = totalTvl.plus(tvl.value)
     }
   }
-  createTvlV2(totalTvl, block);
   tvlUtils.lastTimestampUpdate = block.timestamp
   tvlUtils.save()
+}
+
+
+export function totalTvlUp(): void {
+  let totalCount = TotalTvlCount.load('1')
+  if (!totalCount) {
+    totalCount = new TotalTvlCount('1');
+    totalCount.length = BigInt.zero();
+  }
+
+  totalCount.length = totalCount.length.plus(BigInt.fromString('1'));
+  totalCount.save();
 }

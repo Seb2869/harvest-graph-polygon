@@ -3,8 +3,8 @@ import {
   BALANCER_CONTRACT_NAME, BB_AM_USD_BALANCER,
   CURVE_CONTRACT_NAME,
   F_UNI_V3_CONTRACT_NAME,
-  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, QUICK_SWAP_CONTRACT, TETU_CONTRACT
-} from "./Constant";
+  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, QUICK_SWAP_CONTRACT, TETU_CONTRACT, WETH_LIST,
+} from './Constant';
 import { Address } from "@graphprotocol/graph-ts";
 import { WeightedPool2TokensContract } from "../../generated/Controller/WeightedPool2TokensContract";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
@@ -71,4 +71,13 @@ export function checkBalancer(address: Address): boolean {
 
 export function isAmUsd(address: Address): boolean {
   return address == AM_USD_BALANCER || address == BB_AM_USD_BALANCER;
+}
+
+export function isWeth(address: Address): boolean {
+  for (let i=0;i<WETH_LIST.length;i++) {
+    if (address.equals(WETH_LIST[i])) {
+      return true
+    }
+  }
+  return false
 }
