@@ -62,12 +62,10 @@ export function createTotalTvl(oldValue:BigDecimal, newValue: BigDecimal, id: st
   let totalTvlHistory = TotalTvlHistory.load(id)
   if (totalTvlHistory == null) {
     totalTvlHistory = new TotalTvlHistory(id)
-    totalTvlHistory.sequenceId = `${block.number}-${totalTvl.value}`
-
+    totalTvlHistory.sequenceId = totalTvlUp()
     totalTvlHistory.value = totalTvl.value
     totalTvlHistory.timestamp = block.timestamp
     totalTvlHistory.createAtBlock = block.number
     totalTvlHistory.save()
-    totalTvlUp()
   }
 }

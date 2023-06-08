@@ -41,7 +41,7 @@ export function createTotalTvl(block: ethereum.Block): void {
 }
 
 
-export function totalTvlUp(): void {
+export function totalTvlUp(): BigInt {
   let totalCount = TotalTvlCount.load('1')
   if (!totalCount) {
     totalCount = new TotalTvlCount('1');
@@ -50,4 +50,5 @@ export function totalTvlUp(): void {
 
   totalCount.length = totalCount.length.plus(BigInt.fromString('1'));
   totalCount.save();
+  return totalCount.length;
 }
