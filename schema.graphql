@@ -202,6 +202,7 @@ type TotalTvlHistoryV2 @entity{
   id: ID!
 
   value: BigDecimal!
+  sequenceId: BigInt!
 
   timestamp: BigInt!
   createAtBlock: BigInt!
@@ -213,6 +214,7 @@ type TotalTvlUtil @entity{
 
   vaults: [String!]!
   lastTimestampUpdate: BigInt!
+  lastBlockUpdate: BigInt!
 
   timestamp: BigInt!
   createAtBlock: BigInt!

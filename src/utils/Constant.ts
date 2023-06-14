@@ -102,8 +102,8 @@ export const UNISWAP_V3_FEES = [
 ]
 
 export const WETH_LIST = [
-  Address.fromString('0xfcaf5a6661038732a05859cb5d544e3de00f64ba'),
-  Address.fromString('0xdf93938ab79c899bd185f5681d354bc1b1eb2146'),
+  Address.fromString('0x4a77ef015ddcd972fd9ba2c7d5d658689d090f1a'),
+  Address.fromString('0xd00f9ca46ce0e4a63067c4657986f0167b0de1e5'),
 ]
 
 export const AM_USD_BALANCER = Address.fromString('0xb9ae7a44f9060a80bf436d48c4d7ad42d15715ee')

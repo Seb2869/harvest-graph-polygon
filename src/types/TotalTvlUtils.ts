@@ -1,7 +1,8 @@
 import { TotalTvlCount, TotalTvlUtil } from '../../generated/schema';
 import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
-import { CONST_ID } from '../utils/Constant';
-import { createTvl } from './Tvl';
+import { BI_EVERY_7_DAYS, CONST_ID } from '../utils/Constant';
+import { createTvl, createTvlV2 } from './Tvl';
+import { loadOrCreateVault } from './Vault';
 
 export function pushVault(address: string, block: ethereum.Block): void {
   const vaultUtils = getTvlUtils(block);
@@ -10,6 +11,14 @@ export function pushVault(address: string, block: ethereum.Block): void {
   array.push(address)
   vaultUtils.vaults = array
   vaultUtils.save()
+}
+
+export function canCalculateTotalTvlV2(block: ethereum.Block): void {
+  const tvlUtil = getTvlUtils(block);
+
+  if (tvlUtil.lastTimestampUpdate.plus(BI_EVERY_7_DAYS) > block.timestamp || tvlUtil.lastTimestampUpdate.isZero()) {
+    createTotalTvl(block);
+  }
 }
 
 export function getTvlUtils(block: ethereum.Block): TotalTvlUtil {
@@ -31,15 +40,15 @@ export function createTotalTvl(block: ethereum.Block): void {
   let totalTvl = BigDecimal.zero()
   const array = tvlUtils.vaults
   for (let i = 0; i < array.length; i++) {
-    const tvl = createTvl(Address.fromString(array[i]), block)
-    if (tvl) {
-      totalTvl = totalTvl.plus(tvl.value)
-    }
+    const vault = Address.fromString(array[i]);
+    const tvl = loadOrCreateVault(vault, block).tvl
+    totalTvl = totalTvl.plus(tvl)
   }
+  createTvlV2(totalTvl, block);
   tvlUtils.lastTimestampUpdate = block.timestamp
+  tvlUtils.lastBlockUpdate = block.number
   tvlUtils.save()
 }
-
 
 export function totalTvlUp(): BigInt {
   let totalCount = TotalTvlCount.load('1')
