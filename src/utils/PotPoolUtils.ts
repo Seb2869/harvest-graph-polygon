@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
-import { PotPoolContract } from "../../generated/PotNotifyHelperListener/PotPoolContract";
 import { NULL_ADDRESS } from "./Constant";
+import { PotPoolContract } from '../../generated/templates/VaultListener/PotPoolContract';
 
 export function isPool(address: Address): boolean {
   const pool = PotPoolContract.bind(address)

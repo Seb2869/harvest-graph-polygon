@@ -1,9 +1,9 @@
 import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
 import { UserBalance, UserBalanceHistory, UserTransaction, Vault } from "../../generated/schema";
 import { VaultContract } from "../../generated/templates/VaultListener/VaultContract";
-import { ERC20 } from "../../generated/Controller/ERC20";
-import { pow } from "../utils/MathUtils";
-import { BD_TEN } from "../utils/Constant";
+import { pow } from '../utils/MathUtils';
+import { BD_TEN } from '../utils/Constant';
+import { ERC20 } from '../../generated/Controller1/ERC20';
 
 export function createUserBalance(vaultAddress: Address, amount: BigInt, beneficary: Address, tx: ethereum.Transaction, block: ethereum.Block, isDeposit: boolean): void {
   const vault = Vault.load(vaultAddress.toHex())

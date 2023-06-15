@@ -12,7 +12,6 @@ import {
   SECONDS_OF_YEAR,
   YEAR_PERIOD
 } from "../utils/Constant";
-import { VaultContract } from "../../generated/Controller/VaultContract";
 import { pow } from "../utils/MathUtils";
 import { calculateTvlUsd } from "../utils/TvlUtils";
 import {
@@ -21,6 +20,7 @@ import {
   fetchRewardToken,
   fetchRewardTokenLength
 } from "../utils/PotPoolUtils";
+import { VaultContract } from '../../generated/Controller1/VaultContract';
 
 export function saveApyAutoCompound(vaultAddress: Address, block: ethereum.Block, tx: ethereum.Transaction): void {
   const vault = Vault.load(vaultAddress.toHex())

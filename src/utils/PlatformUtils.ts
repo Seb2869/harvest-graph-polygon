@@ -6,8 +6,8 @@ import {
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, QUICK_SWAP_CONTRACT, TETU_CONTRACT, WETH_LIST,
 } from './Constant';
 import { Address } from "@graphprotocol/graph-ts";
-import { WeightedPool2TokensContract } from "../../generated/Controller/WeightedPool2TokensContract";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
+import { WeightedPool2TokensContract } from '../../generated/Controller1/WeightedPool2TokensContract';
 
 export function isLpUniPair(name: string): boolean {
   for (let i=0;i<LP_UNI_PAIR_CONTRACT_NAME.length;i++) {

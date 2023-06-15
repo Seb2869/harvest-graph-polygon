@@ -3,7 +3,8 @@ import { createUserBalance } from "./types/UserBalance";
 import { isPool } from "./utils/PotPoolUtils";
 import { loadOrCreatePotPool } from "./types/PotPool";
 import { createTvl } from "./types/Tvl";
-import { Invest, Approval, Transfer } from "../generated/Controller/VaultContract";
+import { Approval, Transfer } from '../generated/Controller1/ERC20';
+import { Invest } from '../generated/Controller1/VaultContract';
 
 export function handleTransfer(event: Transfer): void {
   const to = event.params.to

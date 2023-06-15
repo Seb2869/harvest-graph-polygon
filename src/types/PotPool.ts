@@ -1,9 +1,9 @@
 import { Address, ethereum } from "@graphprotocol/graph-ts";
 import { Pool, Vault } from "../../generated/schema";
-import { PotPoolContract } from "../../generated/PotNotifyHelperListener/PotPoolContract";
 import { PotPoolListener } from "../../generated/templates";
 import { loadOrCreateVault } from "./Vault";
 import { loadOrCreateERC20Token } from "./Token";
+import { PotPoolContract } from '../../generated/templates/VaultListener/PotPoolContract';
 
 const TYPE = 'PotPool'
 

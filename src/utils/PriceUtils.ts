@@ -15,10 +15,8 @@ import {
   NULL_ADDRESS, ORACLE_PRICE_TETU, WETH,
 } from './Constant';
 import { Token, Vault } from "../../generated/schema";
-import { UniswapV2PairContract } from "../../generated/ExclusiveRewardPoolListener/UniswapV2PairContract";
 import { WeightedPool2TokensContract } from "../../generated/templates/VaultListener/WeightedPool2TokensContract";
 import { BalancerVaultContract } from "../../generated/templates/VaultListener/BalancerVaultContract";
-import { ERC20 } from "../../generated/Controller/ERC20";
 import { CurveVaultContract } from "../../generated/templates/VaultListener/CurveVaultContract";
 import { CurveMinterContract } from "../../generated/templates/VaultListener/CurveMinterContract";
 import { fetchContractDecimal, fetchContractName } from "./ERC20Utils";
@@ -38,6 +36,8 @@ import { fetchUnderlyingAddress } from "./VaultUtils";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
 import { QuickSwapPoolContract } from "../../generated/Controller1/QuickSwapPoolContract";
 import { TetuPriceCalculatorContract } from "../../generated/Controller1/TetuPriceCalculatorContract";
+import { ERC20 } from '../../generated/Controller1/ERC20';
+import { UniswapV2PairContract } from '../../generated/Controller1/UniswapV2PairContract';
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {

@@ -10,10 +10,10 @@ import {
   MODULE_RESULT,
   MODULE_RESULT_V2,
 } from './utils/Constant';
-import { SharePriceChangeLog } from "../generated/Controller/ControllerContract";
 import { Address, ethereum } from '@graphprotocol/graph-ts';
 import { calculateAndSaveApyAutoCompound } from "./types/Apy";
 import { createTotalTvl, getTvlUtils } from './types/TotalTvlUtils';
+import { SharePriceChangeLog } from '../generated/Controller1/ControllerContract';
 
 
 export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {

@@ -7,9 +7,6 @@ import {
   YEAR_PERIOD
 } from "./Constant";
 import { pow } from "./MathUtils";
-import { PotPoolContract } from "../../generated/PotNotifyHelperListener/PotPoolContract";
-import { fetchPeriodFinishForToken, fetchRewardRateForToken, fetchRewardToken } from "./PotPoolUtils";
-import { getPriceForCoin } from "./PriceUtils";
 
 
 export function calculateApr(period: BigDecimal, reward: BigDecimal, tvl: BigDecimal): BigDecimal {

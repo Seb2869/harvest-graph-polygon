@@ -1,8 +1,8 @@
-import { RewardAdded } from "../generated/PotNotifyHelperListener/PotPoolContract";
 import { PotPoolContract } from "../generated/templates/PotPoolListener/PotPoolContract";
 import { saveReward } from "./types/Reward";
 import { log } from "@graphprotocol/graph-ts";
 import { saveApyReward } from "./types/Apy";
+import { RewardAdded } from '../generated/templates/VaultListener/PotPoolContract';
 
 export function handleRewardAdded(event: RewardAdded): void {
   const poolAddress = event.address

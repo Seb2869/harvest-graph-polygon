@@ -1,4 +1,4 @@
-import { ERC20 } from "../../generated/Controller/ERC20";
+import { ERC20 } from "../../generated/Controller1/ERC20";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { UNKNOWN } from "./Constant";
 
