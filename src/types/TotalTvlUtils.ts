@@ -29,6 +29,7 @@ export function getTvlUtils(block: ethereum.Block): TotalTvlUtil {
     vaultUtils.lastTimestampUpdate = block.timestamp
     vaultUtils.timestamp = block.timestamp
     vaultUtils.createAtBlock = block.number
+    vaultUtils.lastBlockUpdate = block.number;
     vaultUtils.save()
   }
 
