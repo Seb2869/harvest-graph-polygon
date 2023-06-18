@@ -400,7 +400,7 @@ export function getPriceForQuickSwapUniV3(address: Address, block: number): BigD
     return BigDecimal.zero()
   }
 
-  return tryTS.value.divDecimal(BD_18).times(poolPrice)
+  return balance.div(tryTS.value.divDecimal(BD_18))
 }
 
 export function getPriceForTetuVault(address: Address): BigDecimal {
