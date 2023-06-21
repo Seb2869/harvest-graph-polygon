@@ -95,6 +95,7 @@ type Reward @entity {
   pool: Pool!
   "token that is rewarded"
   token: Token!
+  tx: String!
   "amount of reward added"
   reward: BigInt!
   "reward rate after reward was added - valid untill next reward or periodFinish"

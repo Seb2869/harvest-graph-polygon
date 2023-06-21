@@ -20,6 +20,7 @@ export function saveReward(
     reward.rewardRate = rewardRate
     reward.periodFinish = periodFinish
     reward.reward = rewardAmount
+    reward.tx = tx.hash.toHex();
     reward.save()
 
   }
