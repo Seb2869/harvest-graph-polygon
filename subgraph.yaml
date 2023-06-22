@@ -45,11 +45,11 @@ dataSources:
           file: ./abis/quickswap/AlgebraPool.json
         - name: TetuPriceCalculatorContract
           file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
-#      blockHandlers:
-#        - handler: handleBlock
       file: ./src/ControllerListener.ts
   - kind: ethereum
     name: Controller2
@@ -94,6 +94,8 @@ dataSources:
           file: ./abis/quickswap/AlgebraPool.json
         - name: TetuPriceCalculatorContract
           file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
@@ -139,6 +141,8 @@ templates:
           file: ./abis/quickswap/AlgebraPool.json
         - name: TetuPriceCalculatorContract
           file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -187,7 +191,55 @@ templates:
           file: ./abis/quickswap/AlgebraPool.json
         - name: TetuPriceCalculatorContract
           file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
       eventHandlers:
         - event: RewardAdded(address,uint256)
           handler: handleRewardAdded
       file: ./src/PotPoolListener.ts
+  - kind: ethereum/contract
+    name: StrategyListener
+    network: matic
+    source:
+      abi: StrategyContract
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Strategy
+      abis:
+        - name: PotPoolContract
+          file: ./abis/harvest/PotPool.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: VaultContract
+          file: ./abis/Vault.json
+        - name: OracleContract
+          file: ./abis/Oracle.json
+        - name: UniswapV2PairContract
+          file: ./abis/uniswap/UniswapV2Pair.json
+        - name: WeightedPool2TokensContract
+          file: ./abis/balancer/WeightedPool2Tokens.json
+        - name: BalancerVaultContract
+          file: ./abis/balancer/BalancerVault.json
+        - name: CurveVaultContract
+          file: ./abis/curve/CurveVault.json
+        - name: CurveMinterContract
+          file: ./abis/curve/CurveMinter.json
+        - name: UniswapV3PoolContract
+          file: ./abis/uniswap/UniswapV3Pool.json
+        - name: MeshSwapContract
+          file: ./abis/meshswap/MeshSwapContract.json
+        - name: QuickSwapVaultContract
+          file: ./abis/quickswap/Hypervisor.json
+        - name: QuickSwapPoolContract
+          file: ./abis/quickswap/AlgebraPool.json
+        - name: TetuPriceCalculatorContract
+          file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
+      eventHandlers:
+        - event: ProfitLogInReward(uint256,uint256,uint256)
+          handler: handleProfitLogInReward
+      file: ./src/StrategyListener.ts

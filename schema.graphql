@@ -28,6 +28,7 @@ type Vault @entity {
 type Strategy @entity {
   "strategy address"
   id: ID!
+  vault: Vault!
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
@@ -226,4 +227,12 @@ type TotalTvlCount @entity{
   id: ID!
 
   length: BigInt!
+}
+
+type LastHarvest @entity {
+  id: ID!
+  tx: String!
+  strategy: Strategy!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
 }
