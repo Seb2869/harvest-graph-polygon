@@ -100,6 +100,55 @@ dataSources:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
       file: ./src/ControllerListener.ts
+  - kind: ethereum
+    name: ControllerV2
+    network: matic
+    source:
+      address: "0xA8F156088ebFCc4530507e4E3d145e2FC1E6124e"
+      startBlock: 44121444
+      abi: ControllerV2Contract
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+        - Strategy
+      abis:
+        - name: ControllerV2Contract
+          file: ./abis/harvest/ControllerV2.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: VaultContract
+          file: ./abis/Vault.json
+        - name: OracleContract
+          file: ./abis/Oracle.json
+        - name: UniswapV2PairContract
+          file: ./abis/uniswap/UniswapV2Pair.json
+        - name: WeightedPool2TokensContract
+          file: ./abis/balancer/WeightedPool2Tokens.json
+        - name: BalancerVaultContract
+          file: ./abis/balancer/BalancerVault.json
+        - name: CurveVaultContract
+          file: ./abis/curve/CurveVault.json
+        - name: CurveMinterContract
+          file: ./abis/curve/CurveMinter.json
+        - name: UniswapV3PoolContract
+          file: ./abis/uniswap/UniswapV3Pool.json
+        - name: MeshSwapContract
+          file: ./abis/meshswap/MeshSwapContract.json
+        - name: QuickSwapVaultContract
+          file: ./abis/quickswap/Hypervisor.json
+        - name: QuickSwapPoolContract
+          file: ./abis/quickswap/AlgebraPool.json
+        - name: TetuPriceCalculatorContract
+          file: ./abis/tetu/PriceCalculator.json
+        - name: StrategyContract
+          file: ./abis/StrategyBase.json
+      eventHandlers:
+        - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleSharePriceChangeLog
+      file: ./src/ControllerListener.ts
 templates:
   - kind: ethereum/contract
     name: VaultListener
