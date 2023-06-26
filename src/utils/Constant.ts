@@ -80,6 +80,10 @@ export const LP_UNI_PAIR_CONTRACT_NAME = [
   'ApeSwapFinance'.toLowerCase(),
 ]
 
+export const SKIP_TOTAL_TVL = [
+  "0x9e00c8e675f3f25ca0f7f51d4bca28b7be009e12"
+]
+
 export const BALANCER_CONTRACT_NAME = [
   'Balancer'.toLowerCase(),
   'frxETH-WETH'.toLowerCase(),
@@ -171,4 +175,13 @@ export function getFarmToken(): Address {
     return FARM_TOKEN_MATIC
   }
   return NULL_ADDRESS
+}
+
+export function canCalculateTotalTvl(address: string): boolean {
+  for (let i=0;i<SKIP_TOTAL_TVL.length;i++) {
+    if (address.toLowerCase() == SKIP_TOTAL_TVL[i]) {
+      return false;
+    }
+  }
+  return true;
 }
