@@ -20,6 +20,9 @@ type Vault @entity {
   pool: Pool
   underlying: Token!
   tvl: BigDecimal!
+  apy: BigDecimal!
+  apyReward: BigDecimal!
+  apyAutoCompound: BigDecimal!
   lastShareTimestamp: BigInt!
   lastSharePrice: BigInt!
   skipFirstApyReward: Boolean
@@ -128,6 +131,17 @@ type ApyAutoCompound @entity {
   apr: BigDecimal!
   diffSharePrice: BigDecimal!
   diffTimestamp: BigDecimal!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+
+type GeneralApy @entity {
+  "transactionhash-vaultaddress"
+  id: ID!
+  apy: BigDecimal!
+  apyAutoCompound: BigDecimal!
+  apyReward: BigDecimal!
+  vault: Vault!
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
