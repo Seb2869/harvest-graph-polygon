@@ -123,7 +123,7 @@ export const ORACLE_ADDRESS_MATIC = Address.fromString('0x0E74303d0D18884Ce2CEb3
 export const ORACLE_PRICE_TETU = Address.fromString('0x0B62ad43837A69Ad60289EEea7C6e907e759F6E8')
 
 export const NULL_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
-export const BIG_APY_BD = BigDecimal.fromString('2000');
+export const BIG_APY_BD = BigDecimal.fromString('1000');
 
 export const JBRL = '0xf2f77FE7b8e66571E0fca7104c4d670BF1C8d722'.toLowerCase();
 export const BRZ = Address.fromString('0x491a4eB4f1FC3BfF8E1d2FC856a6A46663aD556f');
