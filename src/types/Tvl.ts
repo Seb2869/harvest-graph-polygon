@@ -27,7 +27,7 @@ export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
       tvl.sharePriceDivDecimal = BigDecimal.fromString(tvl.sharePrice.toString()).div(decimal)
       tvl.decimal = decimal
 
-      const price = getPriceByVault(vault, block.number.toI32())
+      const price = getPriceByVault(vault, block)
       tvl.priceUnderlying = price
 
       if (price.gt(BigDecimal.zero())) {

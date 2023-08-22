@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import { OracleContract } from "../../generated/templates/VaultListener/OracleContract";
 import {
   BALANCER_CONTRACT_NAME,
@@ -38,6 +38,7 @@ import { QuickSwapPoolContract } from "../../generated/Controller1/QuickSwapPool
 import { TetuPriceCalculatorContract } from "../../generated/Controller1/TetuPriceCalculatorContract";
 import { ERC20 } from '../../generated/Controller1/ERC20';
 import { UniswapV2PairContract } from '../../generated/Controller1/UniswapV2PairContract';
+import { createPriceFeed } from '../types/PriceFeed';
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
@@ -64,54 +65,72 @@ export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
   return DEFAULT_PRICE
 }
 
-export function getPriceByVault(vault: Vault, block: number): BigDecimal {
+export function getPriceByVault(vault: Vault, block: ethereum.Block): BigDecimal {
 
   if (isPsAddress(vault.id)) {
-    return getPriceForCoin(getFarmToken(), block).divDecimal(BD_18)
+    const tempPrice = getPriceForCoin(getFarmToken(), block.number.toI32()).divDecimal(BD_18)
+    createPriceFeed(vault, tempPrice, block);
+    return tempPrice
   }
   if (isAmUsd(Address.fromString(vault.id))) {
+    createPriceFeed(vault, BD_ONE, block);
     return BD_ONE;
   }
   const underlyingAddress = vault.underlying
 
-  let price = getPriceForCoin(Address.fromString(underlyingAddress), block)
+  let price = getPriceForCoin(Address.fromString(underlyingAddress), block.number.toI32())
   if (!price.isZero()) {
+    createPriceFeed(vault, price.divDecimal(BD_18), block);
     return price.divDecimal(BD_18)
   }
 
   const underlying = Token.load(underlyingAddress)
   if (underlying != null) {
     if (isLpUniPair(underlying.name)) {
-      const tempPrice = getPriceForCoin(Address.fromString(underlyingAddress), block)
+      const tempPrice = getPriceForCoin(Address.fromString(underlyingAddress), block.number.toI32())
       if (tempPrice.gt(DEFAULT_PRICE)) {
+        createPriceFeed(vault, tempPrice.divDecimal(BD_18), block);
         return tempPrice.divDecimal(BD_18)
       }
-      return getPriceLpUniPair(underlying.id, block)
+      const inTempPrice = getPriceLpUniPair(underlying.id, block.number.toI32());
+      createPriceFeed(vault, inTempPrice, block);
+      return inTempPrice;
     }
 
     if (isTetu(underlying.name)) {
-      return getPriceForTetu(Address.fromString(underlying.id))
+      const tempPrice = getPriceForTetu(Address.fromString(underlying.id))
+      createPriceFeed(vault, tempPrice, block);
+      return tempPrice;
     }
 
     if (isBalancer(underlying.name)) {
-      return getPriceForBalancer(underlying.id, block)
+      const tempPrice = getPriceForBalancer(underlying.id, block.number.toI32())
+      createPriceFeed(vault, tempPrice, block);
+      return tempPrice;
     }
 
     if (isCurve(underlying.name)) {
-      const tempPrice = getPriceForCoin(Address.fromString(underlying.id), block)
+      const tempPrice = getPriceForCoin(Address.fromString(underlying.id), block.number.toI32())
       if (!tempPrice.isZero()) {
+        createPriceFeed(vault, tempPrice.divDecimal(BD_18), block);
         return tempPrice.divDecimal(BD_18)
       }
 
-      return getPriceForCurve(underlyingAddress, block)
+      const tempInPrice = getPriceForCurve(underlyingAddress, block.number.toI32())
+      createPriceFeed(vault, tempInPrice, block);
+      return tempInPrice;
     }
 
     if (isMeshSwap(underlying.name)) {
-      return getPriceFotMeshSwap(underlyingAddress, block)
+      const tempPrice = getPriceFotMeshSwap(underlyingAddress, block.number.toI32())
+      createPriceFeed(vault, tempPrice, block);
+      return tempPrice;
     }
 
     if (isQuickSwapUniV3(underlying.name, Address.fromString(underlying.id))) {
-      return getPriceForQuickSwapUniV3(Address.fromString(underlying.id), block)
+      const tempPrice = getPriceForQuickSwapUniV3(Address.fromString(underlying.id), block.number.toI32())
+      createPriceFeed(vault, tempPrice, block);
+      return tempPrice;
     }
   }
 

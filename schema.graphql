@@ -250,3 +250,14 @@ type LastHarvest @entity {
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
+
+type PriceFeed @entity {
+  id: ID!
+  vault: Vault!
+  price: BigDecimal!
+  sharePrice: BigDecimal!
+  # price * sharePrice
+  value: BigDecimal!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
