@@ -5,7 +5,7 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "test": "graph test",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ harvest-graph",
+    "deploy": "graph codegen && graph build && graph deploy --product hosted-service harvestfi/harvest-finance-polygon",
     "create-local": "graph create --node http://localhost:8020/ harvest-graph",
     "remove-local": "graph remove --node http://localhost:8020/ harvest-graph",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 harvest-graph"

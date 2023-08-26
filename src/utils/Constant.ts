@@ -84,6 +84,20 @@ export const SKIP_TOTAL_TVL = [
   "0x9e00c8e675f3f25ca0f7f51d4bca28b7be009e12"
 ]
 
+export const CALCULATE_ONLY_TVL = [
+  '0x41f36bb5b26f2e8646e6adc97faa5e2844a6c842',
+  '0x948ad16cd52a1658b404fe67ed7a56360f52ce08',
+  '0x9ef89a962b421b26def4b5f6435c6fe698fda822',
+  '0xdde43710defef6cbcf820b18debfc3cf9a4f449f',
+  '0xa5422f737f24b10a0928d5e7f6cf404d077e1cd1',
+  '0x506337cc631726a21788b9fdfb6be6292ba7a835',
+  '0x72d35bd4123f5c60d4cb84bfcb40946259223860',
+  '0xA9B35ef7C2289b5D0391381bF8a2560d2eb0F961'.toLowerCase(),
+  '0x2De733b3313890223a5D822488f6DD96cA4701C3'.toLowerCase(),
+  '0x548E84517b2891E0316f604f4f5326a306F1830e'.toLowerCase(),
+  '0x2eD9699441CE48F2AA9C03Af66510D6d72750591'.toLowerCase()
+]
+
 export const BALANCER_CONTRACT_NAME = [
   'Balancer'.toLowerCase(),
   'frxETH-WETH'.toLowerCase(),
@@ -178,10 +192,10 @@ export function getFarmToken(): Address {
 }
 
 export function canCalculateTotalTvl(address: string): boolean {
-  for (let i=0;i<SKIP_TOTAL_TVL.length;i++) {
-    if (address.toLowerCase() == SKIP_TOTAL_TVL[i]) {
-      return false;
+  for (let i=0;i<CALCULATE_ONLY_TVL.length;i++) {
+    if (address.toLowerCase() == CALCULATE_ONLY_TVL[i]) {
+      return true;
     }
   }
-  return true;
+  return false;
 }
