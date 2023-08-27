@@ -6,6 +6,9 @@ import { loadOrCreateVault } from './Vault';
 
 export function pushVault(address: string, block: ethereum.Block): void {
   const vaultUtils = getTvlUtils(block);
+  if (!canCalculateTotalTvl(address)) {
+    return;
+  }
 
   let array = vaultUtils.vaults
   array.push(address)
