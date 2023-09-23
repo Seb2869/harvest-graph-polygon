@@ -3,7 +3,7 @@ import {
   BALANCER_CONTRACT_NAME, BB_AM_USD_BALANCER,
   CURVE_CONTRACT_NAME,
   F_UNI_V3_CONTRACT_NAME,
-  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, QUICK_SWAP_CONTRACT, TETU_CONTRACT, WETH_LIST,
+  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, PEARL_CONTRACT_NAME, QUICK_SWAP_CONTRACT, TETU_CONTRACT, WETH_LIST,
 } from './Constant';
 import { Address } from "@graphprotocol/graph-ts";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
@@ -62,6 +62,15 @@ export function isQuickSwapUniV3(name: string, address: Address): boolean {
   }
   const contract = QuickSwapVaultContract.bind(address)
   return !contract.try_pool().reverted
+}
+
+export function isPearl(name: string): boolean {
+  for (let i=0;i<PEARL_CONTRACT_NAME.length;i++) {
+    if (name.toLowerCase().startsWith(PEARL_CONTRACT_NAME[i])) {
+      return true
+    }
+  }
+  return false
 }
 
 export function checkBalancer(address: Address): boolean {

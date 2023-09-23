@@ -10,6 +10,7 @@ export const DEFAULT_PRICE = BigInt.fromI32(0);
 export const YEAR_PERIOD = BigDecimal.fromString('365')
 export const BI_TEN = BigInt.fromI64(10)
 export const BI_18 = BigInt.fromI64(10 ** 18)
+export const BD_9 = BigDecimal.fromString('1000000000')
 export const BD_18 = BigDecimal.fromString('1000000000000000000')
 export const BD_ZERO = BigDecimal.fromString('0')
 export const BD_ONE = BigDecimal.fromString('1')
@@ -22,6 +23,8 @@ export const BI_EVERY_7_DAYS = BigInt.fromString('604800');
 export const MODULE_RESULT = 75600;
 export const MODULE_RESULT_V2 = 518400;
 export const CONST_ID = '1';
+
+export const PEARL_ROUTER = Address.fromString('0xcC25C0FD84737F44a7d38649b69491BBf0c7f083');
 
 export const WETH = Address.fromString('0x7ceb23fd6bc0add59e62ac25578270cff1b9f619');
 export const STABLE_COIN_ARRAY_MAINNET = [
@@ -55,8 +58,15 @@ export const STABLE_COIN_ARRAY_MATIC = [
   // Orbit Bridge Polygon ZEMIT (oZEMIT)
   '0xa34e0eacb7fbb0b0d45da89b083e0f87fcdf6157'.toLowerCase(),
   // Orbit Bridge Polygon MOOI (oMOOI)
-  '0x746351ab4b9d4f802b7b770f33184d0a6b17363d'.toLowerCase()
+  '0x746351ab4b9d4f802b7b770f33184d0a6b17363d'.toLowerCase(),
+  '0x00e8c0e92eb3ad88189e7125ec8825edc03ab265'.toLowerCase(),
+  '0x40379a439d4f6795b6fc9aa5687db461677a2dba'.toLowerCase(),
 ]
+
+export const USDR = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
+export const PEARL = Address.fromString('0x7238390d5f6f64e67c3211c343a410e2a3dec142');
+export const CAVIAR = Address.fromString('0x6ae96cc93331c19148541d4d2f31363684917092');
+
 
 export const PS_ADDRESSES_MAINNET = [
   '0xd3093e3efbe00f010e8f5efe3f1cb5d9b7fe0eb1'.toLowerCase(),
@@ -105,6 +115,11 @@ export const BALANCER_CONTRACT_NAME = [
   '20WETH-80BAL'.toLowerCase(),
   '20USDC-80TNGBL'.toLowerCase(),
   '2eur (PAR)'.toLowerCase()
+]
+
+export const PEARL_CONTRACT_NAME = [
+  'VolatileV1'.toLowerCase(),
+  'StableV1'.toLowerCase(),
 ]
 export const CURVE_CONTRACT_NAME = 'Curve.fi'.toLowerCase()
 export const F_UNI_V3_CONTRACT_NAME = 'fUniV3'.toLowerCase()

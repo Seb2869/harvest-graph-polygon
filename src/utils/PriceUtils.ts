@@ -2,17 +2,17 @@ import { Address, BigDecimal, BigInt, ethereum, log } from '@graphprotocol/graph
 import { OracleContract } from "../../generated/templates/VaultListener/OracleContract";
 import {
   BALANCER_CONTRACT_NAME,
-  BD_18,
+  BD_18, BD_9,
   BD_ONE,
   BD_TEN, BD_ZERO,
-  BI_18, BRZ,
+  BI_18, BRZ, CAVIAR,
   CURVE_CONTRACT_NAME,
   DEFAULT_DECIMAL,
   DEFAULT_PRICE,
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
-  NULL_ADDRESS, ORACLE_PRICE_TETU, WETH,
+  NULL_ADDRESS, ORACLE_PRICE_TETU, PEARL, PEARL_ROUTER, USDR, WETH,
 } from './Constant';
 import { Token, Vault } from "../../generated/schema";
 import { WeightedPool2TokensContract } from "../../generated/templates/VaultListener/WeightedPool2TokensContract";
@@ -28,7 +28,7 @@ import {
   isBalancer,
   isCurve,
   isLpUniPair,
-  isMeshSwap,
+  isMeshSwap, isPearl,
   isQuickSwapUniV3,
   isTetu, isWeth,
 } from './PlatformUtils';
@@ -39,6 +39,8 @@ import { TetuPriceCalculatorContract } from "../../generated/Controller1/TetuPri
 import { ERC20 } from '../../generated/Controller1/ERC20';
 import { UniswapV2PairContract } from '../../generated/Controller1/UniswapV2PairContract';
 import { createPriceFeed } from '../types/PriceFeed';
+import { PearlRouterContract } from '../../generated/Controller1/PearlRouterContract';
+import { PearlPairContract } from '../../generated/Controller1/PearlPairContract';
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
@@ -76,7 +78,14 @@ export function getPriceByVault(vault: Vault, block: ethereum.Block): BigDecimal
     createPriceFeed(vault, BD_ONE, block);
     return BD_ONE;
   }
+
   const underlyingAddress = vault.underlying
+
+  if (underlyingAddress == CAVIAR.toHexString().toLowerCase()) {
+    const tempPrice = getPriceForCaviar()
+    createPriceFeed(vault, tempPrice, block);
+    return tempPrice
+  }
 
   let price = getPriceForCoin(Address.fromString(underlyingAddress), block.number.toI32())
   if (!price.isZero()) {
@@ -129,6 +138,12 @@ export function getPriceByVault(vault: Vault, block: ethereum.Block): BigDecimal
 
     if (isQuickSwapUniV3(underlying.name, Address.fromString(underlying.id))) {
       const tempPrice = getPriceForQuickSwapUniV3(Address.fromString(underlying.id), block.number.toI32())
+      createPriceFeed(vault, tempPrice, block);
+      return tempPrice;
+    }
+
+    if (isPearl(underlying.name)) {
+      const tempPrice = getPriceForPearlAssets(Address.fromString(underlying.id));
       createPriceFeed(vault, tempPrice, block);
       return tempPrice;
     }
@@ -420,6 +435,97 @@ export function getPriceForQuickSwapUniV3(address: Address, block: number): BigD
   }
 
   return balance.div(tryTS.value.divDecimal(BD_18))
+}
+
+export function getPriceForPearlAssets(underlying: Address): BigDecimal {
+  const pair = PearlPairContract.bind(underlying);
+
+  const tryReserve0 = pair.try_reserve0()
+  const tryReserve1 = pair.try_reserve1()
+
+  if (tryReserve0.reverted || tryReserve1.reverted) {
+    log.log(log.Level.WARNING, `Can not get reserves for underlyingAddress = ${underlying.toHexString()}, try get price for coin`)
+
+    return BigDecimal.zero()
+  }
+
+
+  const reserve0 = tryReserve0.value
+  const reserve1 = tryReserve1.value
+  const totalSupply = pair.totalSupply()
+  const token0 = pair.token0()
+  const token1 = pair.token1()
+  const positionFraction = BD_ONE.div(totalSupply.toBigDecimal().div(pow(BD_TEN, pair.decimals())))
+  const decimal0 = fetchContractDecimal(token0)
+  const decimal1 = fetchContractDecimal(token1)
+
+  log.log(log.Level.INFO, `positionFraction = ${positionFraction}`);
+
+  const firstCoin = reserve0.toBigDecimal()
+    .div(pow(BD_TEN, decimal0.toI32()))
+    .times(positionFraction)
+
+  const secondCoin = reserve1.toBigDecimal()
+    .div(pow(BD_TEN, decimal1.toI32()))
+    .times(positionFraction)
+
+  const token0Price = getPriceForCoinPearl(token0)
+  const token1Price = getPriceForCoinPearl(token1)
+
+
+
+  if (token0Price.equals(BigDecimal.zero()) || token1Price.equals(BigDecimal.zero())) {
+    return BigDecimal.zero()
+  }
+
+  return token0Price
+    .times(firstCoin)
+    .plus(
+      token1Price
+        .times(secondCoin)
+    )
+}
+
+export function getPriceForCoinPearl(token: Address): BigDecimal {
+  if (isStableCoin(token.toHexString().toLowerCase())) {
+    return BigDecimal.fromString('1');
+  }
+  return getPriceForCoinPearlWithTokens(USDR, token);
+}
+
+export function getPriceForCaviar(): BigDecimal {
+  const pearlPrice = getPriceForCoinPearlWithTokens(USDR, PEARL);
+  const caviarPrice = getPriceForCoinPearlWithTokens(CAVIAR, PEARL);
+  return pearlPrice.times(caviarPrice);
+}
+
+export function getPriceForCoinPearlWithTokens(tokenA: Address, tokenB: Address): BigDecimal {
+  if (isStableCoin(tokenB.toHexString())) {
+    return BD_18;
+  }
+
+  if (tokenB.toHexString().toLowerCase() == CAVIAR.toHexString().toLowerCase()) {
+    return getPriceForCaviar()
+  }
+  const router = PearlRouterContract.bind(PEARL_ROUTER);
+  const tryPair = router.try_pairFor(tokenA, tokenB, false);
+  if (tryPair.reverted) {
+    return BigDecimal.zero();
+  }
+  const pair = PearlPairContract.bind(tryPair.value);
+
+  const tryReserve0 = pair.try_reserve0()
+  const tryReserve1 = pair.try_reserve1()
+  if (tryReserve0.reverted || tryReserve1.reverted) {
+    return BigDecimal.zero();
+  }
+  const decimal0 = fetchContractDecimal(tokenA);
+  const decimal1 = fetchContractDecimal(tokenB);
+
+  const reserve0 = tryReserve0.value.divDecimal(pow(BD_TEN, decimal0.toI32()))
+  const reserve1 = tryReserve1.value.divDecimal(pow(BD_TEN, decimal1.toI32()))
+
+  return reserve0.div(reserve1)
 }
 
 export function getPriceForTetuVault(address: Address): BigDecimal {

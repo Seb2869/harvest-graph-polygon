@@ -1,17 +1,17 @@
-import { describe, test, assert, createMockedFunction } from 'matchstick-as/assembly/index';
+import { describe, test, assert, createMockedFunction, dataSourceMock } from 'matchstick-as/assembly/index';
 import {
-  getPriceForBalancer,
-  getPriceForCurve, getPriceFotMeshSwap,
+  getPriceForBalancer, getPriceForCaviar, getPriceForCoinPearlWithTokens,
+  getPriceForCurve, getPriceForPearlAssets, getPriceFotMeshSwap,
   getPriceLpUniPair,
 } from '../../src/utils/PriceUtils';
 import { Vault } from '../../generated/schema';
-import { Address, BigDecimal, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigDecimal, BigInt, Bytes, dataSource, ethereum, log } from '@graphprotocol/graph-ts';
 import {
-  BI_18,
+  BI_18, CAVIAR,
   isPsAddress,
   ORACLE_ADDRESS_MAINNET_FIRST,
   ORACLE_ADDRESS_MAINNET_SECOND,
-  ORACLE_ADDRESS_MATIC,
+  ORACLE_ADDRESS_MATIC, PEARL, PEARL_ROUTER, USDR,
 } from '../../src/utils/Constant';
 import { isLpUniPair, isMeshSwap, isTetu, isUniswapV3 } from '../../src/utils/PlatformUtils';
 
@@ -434,8 +434,203 @@ describe('Get price for uniswapV3', () => {
     assert.assertTrue(price.equals(BigDecimal.fromString('0.9999999999680766898960315631864863')));
   });
 
+  test('Get price for caviar', () => {
+
+    const pairA = Address.fromString('0xf68c20d6C50706f6C6bd8eE184382518C93B368c')
+    const pairB = Address.fromString('0x700D6E1167472bDc312D9cBBdc7c58C7f4F45120');
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(USDR),
+        ethereum.Value.fromAddress(PEARL),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairA)]);
+
+    createMockedFunction(USDR, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
+    createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+
+    createMockedFunction(pairA, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('465552231273432'))])
+
+    createMockedFunction(pairA, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1334558469621953382215158'))])
+
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(CAVIAR),
+        ethereum.Value.fromAddress(PEARL),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairB)]);
+
+    createMockedFunction(CAVIAR, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+
+    createMockedFunction(pairB, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1046403092579154237640559'))])
+
+    createMockedFunction(pairB, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1043698090428385656505749'))])
+
+
+    const price = getPriceForCaviar();
+    log.log(log.Level.INFO, `price = ${price}`);
+    assert.assertTrue(price.equals(BigDecimal.fromString('0.3497477524095430113742046542400072')));
+  });
+
+  test('Get price for one pearl asset USDR', () => {
+
+    const pairA = Address.fromString('0xD17cb0f162f133e339C0BbFc18c36c357E681D6b')
+    const tokenA = Address.fromString('0x2791bca1f2de4661ed88a30c99a7a9449aa84174');
+    const tokenB = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(tokenA),
+        ethereum.Value.fromAddress(tokenB),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairA)]);
+
+    createMockedFunction(tokenA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('6'))]);
+    createMockedFunction(tokenB, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
+
+    createMockedFunction(pairA, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('12480805408833'))])
+
+    createMockedFunction(pairA, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('12660871129309852'))])
+
+
+    const price = getPriceForCoinPearlWithTokens(tokenA, tokenB);
+    log.log(log.Level.INFO, `price = ${price}`);
+    assert.assertTrue(price.equals(BigDecimal.fromString('0.9857777779555783664232341411116047')));
+  });
+
+  test('Get price for USDC USDR', () => {
+    dataSourceMock.setNetwork('matic')
+
+    const pairA = Address.fromString('0xD17cb0f162f133e339C0BbFc18c36c357E681D6b')
+    const tokenA = Address.fromString('0x2791bca1f2de4661ed88a30c99a7a9449aa84174');
+    const tokenB = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
+
+    createMockedFunction(pairA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(tokenA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('6'))]);
+    createMockedFunction(tokenB, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
+
+    createMockedFunction(pairA, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('12480805408833'))])
+
+    createMockedFunction(pairA, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('12660871129309852'))])
+
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
+    createMockedFunction(pairA, 'token1', 'token1():(address)')
+      .returns([ethereum.Value.fromAddress(tokenB)]);
+
+
+    createMockedFunction(pairA, 'totalSupply', 'totalSupply():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('395191099660252'))]);
+
+
+    const price = getPriceForPearlAssets(pairA);
+    log.log(log.Level.INFO, `price = ${price}`);
+    assert.assertTrue(price.equals(BigDecimal.fromString('63619035347.09484100503472381280482')));
+  });
+
+  test('Get price for CVR PEARL', () => {
+    dataSourceMock.setNetwork('matic')
+
+    const pairA = Address.fromString('0x700D6E1167472bDc312D9cBBdc7c58C7f4F45120')
+    const tokenA = Address.fromString('0x6ae96cc93331c19148541d4d2f31363684917092');
+    const tokenB = Address.fromString('0x7238390d5f6f64e67c3211c343a410e2a3dec142');
+
+    createMockedFunction(pairA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(tokenA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(tokenB, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+
+    createMockedFunction(pairA, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1047403192864424967818462'))])
+
+    createMockedFunction(pairA, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1049159947186133877421359'))])
+
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
+    createMockedFunction(pairA, 'token1', 'token1():(address)')
+      .returns([ethereum.Value.fromAddress(tokenB)]);
+
+
+    createMockedFunction(pairA, 'totalSupply', 'totalSupply():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1048281202019872192141689'))]);
+
+
+    // ----- CAVIAR PRICE
+    const pairA_caviar = Address.fromString('0xf68c20d6C50706f6C6bd8eE184382518C93B368c')
+    const pairB_caviar = Address.fromString('0x700D6E1167472bDc312D9cBBdc7c58C7f4F45120');
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(USDR),
+        ethereum.Value.fromAddress(PEARL),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairA_caviar)]);
+
+    createMockedFunction(USDR, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
+    createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+
+    createMockedFunction(pairA_caviar, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('465552231273432'))])
+
+    createMockedFunction(pairA_caviar, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1334558469621953382215158'))])
+
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(CAVIAR),
+        ethereum.Value.fromAddress(PEARL),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairB_caviar)]);
+
+    createMockedFunction(CAVIAR, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+
+    createMockedFunction(pairB_caviar, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1047403192864424967818462'))])
+
+    createMockedFunction(pairB_caviar, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1047403192864424967818462'))])
+
+
+    const price = getPriceForPearlAssets(pairA);
+    log.log(log.Level.INFO, `price = ${price}`);
+    assert.assertTrue(price.equals(BigDecimal.fromString('0.6971029133003901680808615962494532')));
+  });
 
   test('Get price for balancer TNGBL, USDC', () => {
+    dataSourceMock.setNetwork('mainnet')
 
     const underlyingAddress = '0x76FCf0e8C7Ff37A47a799FA2cd4c13cDe0D981C9';
     const underlying = Address.fromString(underlyingAddress);
@@ -501,5 +696,4 @@ describe('Get price for uniswapV3', () => {
     log.log(log.Level.INFO, `price = ${price}`);
     assert.assertTrue(price.equals(BigDecimal.fromString('2.198341818522272257194967808759571')));
   });
-
 });
