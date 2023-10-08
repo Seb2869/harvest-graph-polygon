@@ -10,7 +10,7 @@ import {
   MODULE_RESULT,
   MODULE_RESULT_V2,
 } from './utils/Constant';
-import { Address, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { calculateAndSaveApyAutoCompound } from "./types/Apy";
 import { createTotalTvl, getTvlUtils } from './types/TotalTvlUtils';
 import { SharePriceChangeLog } from '../generated/Controller1/ControllerContract';
@@ -22,10 +22,8 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
   const block = event.block.number;
   const timestamp = event.block.timestamp;
   const sharePrice = new SharePrice(`${event.transaction.hash.toHex()}-${vaultAddress}`)
-  let vault = Vault.load(vaultAddress)
-  if (vault == null) {
-    vault = loadOrCreateVault(Address.fromString(vaultAddress), event.block, strategyAddress)
-  }
+  let vault = loadOrCreateVault(Address.fromString(vaultAddress), event.block, strategyAddress);
+
   sharePrice.vault = vaultAddress;
   sharePrice.strategy = strategyAddress;
   sharePrice.oldSharePrice = event.params.oldSharePrice;
@@ -34,21 +32,20 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
   sharePrice.timestamp = timestamp;
   sharePrice.save();
 
-  if (vault != null && sharePrice.oldSharePrice != sharePrice.newSharePrice) {
+  if (vault != null) {
     const lastShareTimestamp = vault.lastShareTimestamp
     if (!lastShareTimestamp.isZero()) {
-      const diffSharePrice = sharePrice.newSharePrice.minus(sharePrice.oldSharePrice).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
+      let tempDiffSharePrice = sharePrice.newSharePrice.minus(sharePrice.oldSharePrice)
+      if (tempDiffSharePrice.le(BigInt.zero())) {
+        tempDiffSharePrice = powBI(BI_TEN, vault.decimal.toI32())
+      }
+      const diffSharePrice = tempDiffSharePrice.divDecimal(pow(BD_TEN, vault.decimal.toI32()))
       const diffTimestamp = timestamp.minus(lastShareTimestamp)
       calculateAndSaveApyAutoCompound(`${event.transaction.hash.toHex()}-${vaultAddress}`, diffSharePrice, diffTimestamp, vault, event.block)
     }
     vault.lastShareTimestamp = sharePrice.timestamp
-    if (sharePrice.newSharePrice.isZero()) {
-      vault.lastSharePrice = powBI(BI_TEN, vault.decimal.toI32());
-    } else {
-      vault.lastSharePrice = sharePrice.newSharePrice
-    }
+    vault.lastSharePrice = sharePrice.newSharePrice
     vault.save()
-
   }
 }
 

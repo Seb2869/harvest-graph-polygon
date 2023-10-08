@@ -447,6 +447,9 @@ describe('Get price for uniswapV3', () => {
       ])
       .returns([ethereum.Value.fromAddress(pairA)]);
 
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(USDR)]);
+
     createMockedFunction(USDR, 'decimals', 'decimals():(uint8)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
     createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
@@ -466,6 +469,9 @@ describe('Get price for uniswapV3', () => {
         ethereum.Value.fromBoolean(false)
       ])
       .returns([ethereum.Value.fromAddress(pairB)]);
+
+    createMockedFunction(pairB, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(CAVIAR)]);
 
     createMockedFunction(CAVIAR, 'decimals', 'decimals():(uint8)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
@@ -497,6 +503,9 @@ describe('Get price for uniswapV3', () => {
         ethereum.Value.fromBoolean(false)
       ])
       .returns([ethereum.Value.fromAddress(pairA)]);
+
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
 
     createMockedFunction(tokenA, 'decimals', 'decimals():(uint8)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('6'))]);
@@ -544,10 +553,69 @@ describe('Get price for uniswapV3', () => {
     createMockedFunction(pairA, 'totalSupply', 'totalSupply():(uint256)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('395191099660252'))]);
 
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
+
 
     const price = getPriceForPearlAssets(pairA);
     log.log(log.Level.INFO, `price = ${price}`);
     assert.assertTrue(price.equals(BigDecimal.fromString('63619035347.09484100503472381280482')));
+  });
+
+  test('Get price for MATIC USDR', () => {
+    dataSourceMock.setNetwork('matic')
+
+    const pairA = Address.fromString('0xD17cb0f162f133e339C0BbFc18c36c357E681D6b')
+    const tokenA = Address.fromString('0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270');
+    const tokenB = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
+
+    createMockedFunction(pairA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(tokenA, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);
+    createMockedFunction(tokenB, 'decimals', 'decimals():(uint8)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
+
+    createMockedFunction(pairA, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1384488597886228830375177'))])
+
+    createMockedFunction(pairA, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('782746058322193'))])
+
+    createMockedFunction(pairA, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
+    createMockedFunction(pairA, 'token1', 'token1():(address)')
+      .returns([ethereum.Value.fromAddress(tokenB)]);
+
+
+    createMockedFunction(pairA, 'totalSupply', 'totalSupply():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('32910280521975068116'))]);
+
+
+    const pairA_matic = Address.fromString('0xB4d852b92148eAA16467295975167e640E1FE57A')
+
+    createMockedFunction(PEARL_ROUTER, 'pairFor', 'pairFor(address,address,bool):(address)')
+      .withArgs([
+        ethereum.Value.fromAddress(USDR),
+        ethereum.Value.fromAddress(tokenA),
+        ethereum.Value.fromBoolean(false)
+      ])
+      .returns([ethereum.Value.fromAddress(pairA_matic)]);
+
+    createMockedFunction(pairA_matic, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(tokenA)]);
+
+    createMockedFunction(pairA_matic, 'reserve0', 'reserve0():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('1383827050518688383964840'))])
+
+    createMockedFunction(pairA_matic, 'reserve1', 'reserve1():(uint256)')
+      .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('782746058322193'))])
+
+
+
+    const price = getPriceForPearlAssets(pairA);
+    log.log(log.Level.INFO, `price = ${price}`);
+    assert.assertTrue(price.equals(BigDecimal.fromString('47579.85312084041601287039999586485')));
   });
 
   test('Get price for CVR PEARL', () => {
@@ -592,6 +660,9 @@ describe('Get price for uniswapV3', () => {
       ])
       .returns([ethereum.Value.fromAddress(pairA_caviar)]);
 
+    createMockedFunction(pairA_caviar, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(USDR)]);
+
     createMockedFunction(USDR, 'decimals', 'decimals():(uint8)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('9'))]);
     createMockedFunction(PEARL, 'decimals', 'decimals():(uint8)')
@@ -611,6 +682,9 @@ describe('Get price for uniswapV3', () => {
         ethereum.Value.fromBoolean(false)
       ])
       .returns([ethereum.Value.fromAddress(pairB_caviar)]);
+
+    createMockedFunction(pairB_caviar, 'token0', 'token0():(address)')
+      .returns([ethereum.Value.fromAddress(CAVIAR)]);
 
     createMockedFunction(CAVIAR, 'decimals', 'decimals():(uint8)')
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromString('18'))]);

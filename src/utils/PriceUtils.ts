@@ -472,6 +472,8 @@ export function getPriceForPearlAssets(underlying: Address): BigDecimal {
   const token0Price = getPriceForCoinPearl(token0)
   const token1Price = getPriceForCoinPearl(token1)
 
+  log.log(log.Level.INFO, `token0Price = ${token0Price}`)
+  log.log(log.Level.INFO, `token1Price = ${token1Price}`)
 
 
   if (token0Price.equals(BigDecimal.zero()) || token1Price.equals(BigDecimal.zero())) {
@@ -522,10 +524,27 @@ export function getPriceForCoinPearlWithTokens(tokenA: Address, tokenB: Address)
   const decimal0 = fetchContractDecimal(tokenA);
   const decimal1 = fetchContractDecimal(tokenB);
 
-  const reserve0 = tryReserve0.value.divDecimal(pow(BD_TEN, decimal0.toI32()))
-  const reserve1 = tryReserve1.value.divDecimal(pow(BD_TEN, decimal1.toI32()))
+  const tryToken0 = pair.try_token0();
+  if (tryToken0.reverted) {
+    return BigDecimal.zero();
+  }
 
-  return reserve0.div(reserve1)
+  let parsedDecimal0 = pow(BD_TEN, decimal0.toI32());
+  let parsedDecimal1 = pow(BD_TEN, decimal1.toI32());
+
+
+  let reserve0 = tryReserve0.value.divDecimal(parsedDecimal0)
+  let reserve1 = tryReserve1.value.divDecimal(parsedDecimal1)
+
+
+  if (!tokenA.equals(tryToken0.value)) {
+    reserve0 = tryReserve0.value.divDecimal(parsedDecimal1)
+    reserve1 = tryReserve1.value.divDecimal(parsedDecimal0)
+    return reserve1.div(reserve0);
+  }
+
+
+  return reserve0.div(reserve1);
 }
 
 export function getPriceForTetuVault(address: Address): BigDecimal {
