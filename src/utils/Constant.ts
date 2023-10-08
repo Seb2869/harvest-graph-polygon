@@ -61,7 +61,9 @@ export const STABLE_COIN_ARRAY_MATIC = [
   '0x746351ab4b9d4f802b7b770f33184d0a6b17363d'.toLowerCase(),
   '0x00e8c0e92eb3ad88189e7125ec8825edc03ab265'.toLowerCase(),
   '0x40379a439d4f6795b6fc9aa5687db461677a2dba'.toLowerCase(),
-  '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'.toLowerCase()
+  '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'.toLowerCase(),
+  // STAR
+  '0xc19669a405067927865b40ea045a2baabbbe57f5'.toLowerCase()
 ]
 
 export const USDR = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
