@@ -27,6 +27,7 @@ export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, 
     vault.lastSharePrice = BigInt.zero()
     vault.skipFirstApyReward = true
     vault.tvl = BigDecimal.zero()
+    vault.priceUnderlying = BigDecimal.zero()
     vault.apyReward = BigDecimal.zero();
     vault.apy = BigDecimal.zero();
     vault.apyAutoCompound = BigDecimal.zero();

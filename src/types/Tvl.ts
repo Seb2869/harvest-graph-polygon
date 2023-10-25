@@ -41,6 +41,7 @@ export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
       tvl.save()
       // createTotalTvl(vault.tvl, tvl.value, id, block)
       vault.tvl = tvl.value
+      vault.priceUnderlying = price
       vault.save()
     }
     return tvl;

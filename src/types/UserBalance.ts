@@ -28,7 +28,8 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
       userBalance.value = BigDecimal.zero()
       userBalance.userAddress = beneficary.toHex()
     }
-
+    userBalance.poolBalance = poolBalance
+    userBalance.vaultBalance = vaultBalance
     userBalance.value = value
 
     userBalance.save()
@@ -41,7 +42,9 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
       ? 'Deposit'
       : 'Withdraw'
     userBalanceHistory.value = userBalance.value
-
+    userBalanceHistory.poolBalance = poolBalance
+    userBalanceHistory.vaultBalance = vaultBalance
+    userBalanceHistory.priceUnderlying = vault.priceUnderlying
     userBalanceHistory.sharePrice = vaultContract.getPricePerFullShare()
     userBalanceHistory.save()
 
