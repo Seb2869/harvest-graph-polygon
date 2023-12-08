@@ -23,6 +23,7 @@ export const BI_EVERY_7_DAYS = BigInt.fromString('604800');
 export const MODULE_RESULT = 75600;
 export const MODULE_RESULT_V2 = 518400;
 export const CONST_ID = '1';
+export const TWO_WEEKS_IN_SECONDS = BigInt.fromString('1209600');
 
 export const PEARL_ROUTER = Address.fromString('0xcC25C0FD84737F44a7d38649b69491BBf0c7f083');
 

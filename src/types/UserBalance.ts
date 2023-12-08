@@ -13,9 +13,9 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
     let poolBalance = BigDecimal.zero()
     if (vault.pool != null) {
       const poolContract = ERC20.bind(Address.fromString(vault.pool!))
-      poolBalance = poolContract.balanceOf(beneficary).divDecimal(pow(BD_TEN, vault.decimal.toI32())).times(sharePrice)
+      poolBalance = poolContract.balanceOf(beneficary).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
     }
-    const vaultBalance = vaultContract.balanceOf(beneficary).divDecimal(pow(BD_TEN, vault.decimal.toI32())).times(sharePrice)
+    const vaultBalance = vaultContract.balanceOf(beneficary).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
     const value = vaultBalance.plus(poolBalance)
 
     const userBalanceId = `${vault.id}-${beneficary.toHex()}`
@@ -48,6 +48,8 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
     userBalanceHistory.sharePrice = vaultContract.getPricePerFullShare()
     userBalanceHistory.save()
 
+    updateVaultUsers(vault, value, beneficary.toHex());
+
     const userTransaction = new UserTransaction(tx.hash.toHex())
     userTransaction.createAtBlock = block.number
     userTransaction.timestamp = block.timestamp
@@ -60,4 +62,31 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
     userTransaction.value = amount
     userTransaction.save()
   }
+}
+
+function updateVaultUsers(vault: Vault, value: BigDecimal, userAddress: string): void {
+  let users = vault.users;
+  if (value.equals(BigDecimal.zero())) {
+    let newUsers: string[] = [];
+    for (let i = 0; i < users.length; i++) {
+      if (users[i].toLowerCase() != userAddress.toLowerCase()) {
+        newUsers.push(users[i])
+      }
+    }
+    users = newUsers;
+  } else {
+    let hasUser = false;
+    for (let i = 0; i < users.length; i++) {
+      if (userAddress.toLowerCase() == users[i].toLowerCase()) {
+        hasUser = true;
+        break;
+      }
+    }
+
+    if (!hasUser) {
+      users.push(userAddress)
+    }
+  }
+  vault.users = users;
+  vault.save()
 }

@@ -11,7 +11,7 @@ dataSources:
       abi: ControllerContract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Vault
@@ -64,7 +64,7 @@ dataSources:
       abi: ControllerContract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Vault
@@ -117,7 +117,7 @@ dataSources:
       abi: ControllerV2Contract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Vault
@@ -169,7 +169,7 @@ templates:
       abi: VaultContract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Vault
@@ -223,7 +223,7 @@ templates:
       abi: PotPoolContract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -273,7 +273,7 @@ templates:
       abi: StrategyContract
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Strategy
