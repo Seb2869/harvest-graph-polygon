@@ -1,5 +1,5 @@
-import { SharePrice, Strategy, Vault, VaultHistory } from '../generated/schema';
-import { loadOrCreateVault } from "./types/Vault";
+import { PriceHistory, SharePrice, Strategy, Vault, VaultHistory } from '../generated/schema';
+import { getVaultUtils, loadOrCreateVault } from './types/Vault';
 import { pow, powBI } from "./utils/MathUtils";
 import {
   BD_TEN,
@@ -15,6 +15,7 @@ import { calculateAndSaveApyAutoCompound } from "./types/Apy";
 import { createTotalTvl, getTvlUtils } from './types/TotalTvlUtils';
 import { SharePriceChangeLog } from '../generated/Controller1/ControllerContract';
 import { createUserBalance } from './types/UserBalance';
+import { getPriceByVault } from './utils/PriceUtils';
 
 
 export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
@@ -63,6 +64,7 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
       vaultHistory = new VaultHistory(vaultHistoryId);
       vaultHistory.vault = vault.id;
       vaultHistory.sharePrice = vault.lastSharePrice;
+      vaultHistory.sharePriceDec = vault.lastSharePrice.divDecimal(pow(BD_TEN, vault.decimal.toI32()))
       vaultHistory.priceUnderlying = vault.priceUnderlying;
       vaultHistory.timestamp = event.block.timestamp;
       vaultHistory.save();
@@ -71,10 +73,23 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
 }
 
 export function handleBlock(block: ethereum.Block): void {
-  const tvlUtils = getTvlUtils(block)
-  if (block.timestamp.toI32() % EVERY_7_DAYS == MODULE_RESULT_V2) {
-    createTotalTvl(block)
-  } else if (block.timestamp.ge(tvlUtils.lastTimestampUpdate.plus(BI_EVERY_7_DAYS))) {
-    createTotalTvl(block)
+  const vaultUtils = getVaultUtils();
+  for (let i = 0; i < vaultUtils.vaults.length; i++) {
+    const vault = loadOrCreateVault(Address.fromString(vaultUtils.vaults[i]), block);
+    const price = getPriceByVault(vault, block);
+
+    const priceHistoryId = `${vault.id}-${block.number.toString()}`
+    let priceHistory = PriceHistory.load(priceHistoryId)
+    if (!priceHistory) {
+      priceHistory = new PriceHistory(priceHistoryId);
+      priceHistory.vault = vault.id
+      priceHistory.price = price;
+      priceHistory.createAtBlock = block.number
+      priceHistory.timestamp = block.timestamp
+      priceHistory.save();
+    }
+
+    vault.priceUnderlying = price
+    vault.save();
   }
 }

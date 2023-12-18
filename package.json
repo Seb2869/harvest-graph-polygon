@@ -1,5 +1,5 @@
 {
-  "name": "harvest-graph",
+  "name": "harvest-graph-polygon",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
@@ -11,8 +11,8 @@
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 harvest-graph"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.30.1",
-    "@graphprotocol/graph-ts": "0.27.0",
+    "@graphprotocol/graph-cli": "0.64.0",
+    "@graphprotocol/graph-ts": "0.32.0",
     "matchstick-as": "^0.5.0"
   }
 }

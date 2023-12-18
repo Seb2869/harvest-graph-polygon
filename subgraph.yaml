@@ -1,4 +1,4 @@
-specVersion: 0.0.4
+specVersion: 0.0.8
 schema:
   file: ./schema.graphql
 dataSources:
@@ -54,6 +54,11 @@ dataSources:
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: 41600
       file: ./src/ControllerListener.ts
   - kind: ethereum
     name: Controller2

@@ -31,6 +31,23 @@ type Vault @entity {
   lastUsersShareTimestamp: BigInt!
 }
 
+type VaultUtil @entity {
+  id: ID!
+  vaults: [Vault!]!
+  vaultLength: Int!
+  lastBlockPrice: BigInt!
+}
+
+type PriceHistory @entity {
+  id: ID!
+
+  price: BigDecimal!
+  vault: Vault!
+
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+
 type VaultHistory @entity {
   "tx + vault address"
   id: ID!
@@ -38,6 +55,7 @@ type VaultHistory @entity {
 
   priceUnderlying: BigDecimal!
   sharePrice: BigInt!
+  sharePriceDec: BigDecimal!
   timestamp: BigInt!
 }
 
