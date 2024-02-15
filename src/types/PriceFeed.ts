@@ -10,7 +10,7 @@ export function createPriceFeed(vault: Vault, price: BigDecimal, block: ethereum
     priceFeed = new PriceFeed(id);
     priceFeed.vault = vault.id
     priceFeed.price = price;
-    priceFeed.sharePrice = BigDecimal.zero();
+    priceFeed.sharePrice = BigDecimal.fromString('1');
     priceFeed.value = BigDecimal.zero();
     priceFeed.createAtBlock = block.number
     priceFeed.timestamp = block.timestamp

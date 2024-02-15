@@ -12,7 +12,7 @@ import {
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
-  NULL_ADDRESS, ORACLE_PRICE_TETU, PEARL, PEARL_ROUTER, USDR, WETH,
+  NULL_ADDRESS, ORACLE_PRICE_TETU, PEARL, PEARL_ROUTER, USDC, WETH,
 } from './Constant';
 import { Token, Vault } from "../../generated/schema";
 import { WeightedPool2TokensContract } from "../../generated/templates/VaultListener/WeightedPool2TokensContract";
@@ -268,11 +268,12 @@ export function getPriceForBalancer(underlying: string, block: number, isTest: b
   }
   const balancer = WeightedPool2TokensContract.bind(Address.fromString(underlying))
   const poolId = balancer.getPoolId()
-  const totalSupply = balancer.totalSupply().divDecimal(BD_18)
+  let totalSupply = balancer.totalSupply().divDecimal(BD_18)
   const vault = BalancerVaultContract.bind(balancer.getVault())
   const tokenInfo = vault.getPoolTokens(poolId)
 
   let price = BigDecimal.zero()
+  let poolBalance = BigDecimal.zero();
   for (let i=0;i<tokenInfo.getTokens().length;i++) {
     const tokenAddress = tokenInfo.getTokens()[i]
     const name = fetchContractName(tokenAddress)
@@ -288,19 +289,25 @@ export function getPriceForBalancer(underlying: string, block: number, isTest: b
 
     if (tokenAddress == Address.fromString(underlying)) {
       tokenPrice = BD_ONE;
-    } else if (!isTest && checkBalancer(tokenAddress)) {
-      tokenPrice = getPriceForBalancer(tokenAddress.toHexString(), block);
-    } else if (isTetu(name)) {
-      tokenPrice = getPriceByAddress(tokenAddress, block);
+      poolBalance = balance;
     } else {
-      tokenPrice = getPriceForCoin(tokenAddress, block).divDecimal(BD_18)
-    }
+      if (!isTest && checkBalancer(tokenAddress)) {
+        tokenPrice = getPriceForBalancer(tokenAddress.toHexString(), block);
+      } else if (isTetu(name)) {
+        tokenPrice = getPriceByAddress(tokenAddress, block);
+      } else {
+        tokenPrice = getPriceForCoin(tokenAddress, block).divDecimal(BD_18)
+      }
 
-    price = price.plus(balance.times(tokenPrice))
+      price = price.plus(balance.times(tokenPrice))
+    }
   }
 
   if (price.le(BigDecimal.zero())) {
     return price
+  }
+  if (poolBalance.gt(BigDecimal.zero())) {
+    totalSupply = totalSupply.minus(poolBalance);
   }
   return price.div(totalSupply)
 }
@@ -492,11 +499,11 @@ export function getPriceForCoinPearl(token: Address): BigDecimal {
   if (isStableCoin(token.toHexString().toLowerCase())) {
     return BigDecimal.fromString('1');
   }
-  return getPriceForCoinPearlWithTokens(USDR, token);
+  return getPriceForCoinPearlWithTokens(USDC, token);
 }
 
 export function getPriceForCaviar(): BigDecimal {
-  const pearlPrice = getPriceForCoinPearlWithTokens(USDR, PEARL);
+  const pearlPrice = getPriceForCoinPearlWithTokens(USDC, PEARL);
   const caviarPrice = getPriceForCoinPearlWithTokens(CAVIAR, PEARL);
   return pearlPrice.times(caviarPrice);
 }

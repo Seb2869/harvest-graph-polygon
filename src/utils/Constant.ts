@@ -44,29 +44,16 @@ export const STABLE_COIN_ARRAY_MATIC = [
   '0xc2132d05d31c914a87c6611c10748aeb04b58e8f'.toLowerCase(),
   '0xE840B73E5287865EEc17d250bFb1536704B43B21'.toLowerCase(),
   '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'.toLowerCase(),
-  // Euro Tether (PoS) (EURT)
-  '0x7BDF330f423Ea880FF95fC41A280fD5eCFD3D09f'.toLowerCase(),
-  // Jarvis Synthetic Canadian Dollar (jCAD)
-  '0x8ca194A3b22077359b5732DE53373D4afC11DeE3'.toLowerCase(),
-  // Jarvis Synthetic Singapore Dollar (jSGD)
-  '0xa926db7a4CC0cb1736D5ac60495ca8Eb7214B503'.toLowerCase(),
-  // Monerium EUR emoney (EURe)
-  '0x18ec0A6E18E5bc3784fDd3a3634b31245ab704F6'.toLowerCase(),
   // Orbit Bridge Polygon Tether USD (oUSDT)
   '0x957da9ebbcdc97dc4a8c274dd762ec2ab665e15f'.toLowerCase(),
   // Orbit Bridge Polygon USD Coin (oUSDC)
   '0x5bef2617ecca9a39924c09017c5f1e25efbb3ba8'.toLowerCase(),
-  // Orbit Bridge Polygon ZEMIT (oZEMIT)
-  '0xa34e0eacb7fbb0b0d45da89b083e0f87fcdf6157'.toLowerCase(),
-  // Orbit Bridge Polygon MOOI (oMOOI)
-  '0x746351ab4b9d4f802b7b770f33184d0a6b17363d'.toLowerCase(),
-  '0x00e8c0e92eb3ad88189e7125ec8825edc03ab265'.toLowerCase(),
-  '0x40379a439d4f6795b6fc9aa5687db461677a2dba'.toLowerCase(),
   '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'.toLowerCase(),
   // STAR
   '0xc19669a405067927865b40ea045a2baabbbe57f5'.toLowerCase()
 ]
 
+export const USDC = Address.fromString('0x2791bca1f2de4661ed88a30c99a7a9449aa84174');
 export const USDR = Address.fromString('0x40379a439d4f6795b6fc9aa5687db461677a2dba');
 export const PEARL = Address.fromString('0x7238390d5f6f64e67c3211c343a410e2a3dec142');
 export const CAVIAR = Address.fromString('0x6ae96cc93331c19148541d4d2f31363684917092');
