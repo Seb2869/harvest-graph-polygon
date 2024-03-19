@@ -50,7 +50,8 @@ export const STABLE_COIN_ARRAY_MATIC = [
   '0x5bef2617ecca9a39924c09017c5f1e25efbb3ba8'.toLowerCase(),
   '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'.toLowerCase(),
   // STAR
-  '0xc19669a405067927865b40ea045a2baabbbe57f5'.toLowerCase()
+  '0xc19669a405067927865b40ea045a2baabbbe57f5'.toLowerCase(),
+  '0xE2Aa7db6dA1dAE97C5f5C6914d285fBfCC32A128'.toLowerCase()
 ]
 
 export const USDC = Address.fromString('0x2791bca1f2de4661ed88a30c99a7a9449aa84174');
@@ -144,6 +145,8 @@ export const ORACLE_PRICE_TETU = Address.fromString('0x0B62ad43837A69Ad60289EEea
 
 export const NULL_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 export const BIG_APY_BD = BigDecimal.fromString('1000');
+export const PAR = Address.fromString('0xE2Aa7db6dA1dAE97C5f5C6914d285fBfCC32A128');
+export const PAR_USDT_UNISWAP_V_3 = Address.fromString('0xfa22d298e3b0bc1752e5ef2849cec1149d596674');
 
 export const JBRL = '0xf2f77FE7b8e66571E0fca7104c4d670BF1C8d722'.toLowerCase();
 export const BRZ = Address.fromString('0x491a4eB4f1FC3BfF8E1d2FC856a6A46663aD556f');

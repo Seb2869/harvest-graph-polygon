@@ -12,7 +12,7 @@ import {
   F_UNI_V3_CONTRACT_NAME, getFarmToken,
   getOracleAddress, isBrl, isPsAddress, isStableCoin,
   LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT,
-  NULL_ADDRESS, ORACLE_PRICE_TETU, PEARL, PEARL_ROUTER, USDC, WETH,
+  NULL_ADDRESS, ORACLE_PRICE_TETU, PAR_USDT_UNISWAP_V_3, PEARL, PEARL_ROUTER, USDC, WETH,
 } from './Constant';
 import { Token, Vault } from "../../generated/schema";
 import { WeightedPool2TokensContract } from "../../generated/templates/VaultListener/WeightedPool2TokensContract";
@@ -28,7 +28,7 @@ import {
   isBalancer,
   isCurve,
   isLpUniPair,
-  isMeshSwap, isPearl,
+  isMeshSwap, isPar, isPearl,
   isQuickSwapUniV3,
   isTetu, isWeth,
 } from './PlatformUtils';
@@ -41,6 +41,7 @@ import { UniswapV2PairContract } from '../../generated/Controller1/UniswapV2Pair
 import { createPriceFeed } from '../types/PriceFeed';
 import { PearlRouterContract } from '../../generated/Controller1/PearlRouterContract';
 import { PearlPairContract } from '../../generated/Controller1/PearlPairContract';
+import { UniswapV3PoolContract } from '../../generated/Controller1/UniswapV3PoolContract';
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
@@ -293,8 +294,8 @@ export function getPriceForBalancer(underlying: string, block: number, isTest: b
     } else {
       if (!isTest && checkBalancer(tokenAddress)) {
         tokenPrice = getPriceForBalancer(tokenAddress.toHexString(), block);
-      } else if (isTetu(name)) {
-        tokenPrice = getPriceByAddress(tokenAddress, block);
+      } else if (isPar(tokenAddress)) {
+        tokenPrice = getPriceForUniswapV3(PAR_USDT_UNISWAP_V_3, block);
       } else {
         tokenPrice = getPriceForCoin(tokenAddress, block).divDecimal(BD_18)
       }
@@ -558,4 +559,35 @@ export function getPriceForTetuVault(address: Address): BigDecimal {
   const contract = TetuPriceCalculatorContract.bind(ORACLE_PRICE_TETU)
   const tryPrice = contract.try_getPriceWithDefaultOutput(address)
   return tryPrice.reverted ? BigDecimal.zero() : tryPrice.value.divDecimal(BD_18)
+}
+
+export function getPriceForUniswapV3(poolAdr: Address, block: number): BigDecimal {
+  const pool =  UniswapV3PoolContract.bind(poolAdr)
+
+  const liquidity = pool.liquidity()
+  const token0 = ERC20.bind(pool.token0())
+  const token1 = ERC20.bind(pool.token1())
+  const balanceToken0 = token0.balanceOf(poolAdr)
+  const balanceToken1 = token1.balanceOf(poolAdr)
+  const priceToken0 = getPriceForCoin(token0._address, block)
+  const priceToken1 = getPriceForCoin(token1._address, block)
+  if (priceToken0.isZero()
+    || liquidity.isZero()
+    || token0.decimals() == 0
+    || token1.decimals() == 0
+    || priceToken1.isZero()
+    || balanceToken1.isZero()
+    || balanceToken0.isZero()) {
+    return BigDecimal.zero()
+  }
+  const balance = priceToken0.divDecimal(BD_18)
+    .times(balanceToken0.divDecimal(pow(BD_TEN, token0.decimals())))
+    .plus(
+      priceToken1.divDecimal(BD_18)
+        .times(balanceToken1.divDecimal(pow(BD_TEN, token1.decimals()))))
+
+  let price = balance
+    .div(liquidity.divDecimal(BD_18))
+
+  return price;
 }

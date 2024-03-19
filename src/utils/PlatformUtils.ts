@@ -1,9 +1,16 @@
 import {
   AM_USD_BALANCER,
-  BALANCER_CONTRACT_NAME, BB_AM_USD_BALANCER,
+  BALANCER_CONTRACT_NAME,
+  BB_AM_USD_BALANCER,
   CURVE_CONTRACT_NAME,
   F_UNI_V3_CONTRACT_NAME,
-  LP_UNI_PAIR_CONTRACT_NAME, MESH_SWAP_CONTRACT, PEARL_CONTRACT_NAME, QUICK_SWAP_CONTRACT, TETU_CONTRACT, WETH_LIST,
+  LP_UNI_PAIR_CONTRACT_NAME,
+  MESH_SWAP_CONTRACT,
+  PAR,
+  PEARL_CONTRACT_NAME,
+  QUICK_SWAP_CONTRACT,
+  TETU_CONTRACT,
+  WETH_LIST,
 } from './Constant';
 import { Address } from "@graphprotocol/graph-ts";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
@@ -89,4 +96,8 @@ export function isWeth(address: Address): boolean {
     }
   }
   return false
+}
+
+export function isPar(address: Address): boolean {
+  return address === PAR;
 }
