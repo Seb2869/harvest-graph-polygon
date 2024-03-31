@@ -131,7 +131,7 @@ export const WETH_LIST = [
   Address.fromString('0x4a77ef015ddcd972fd9ba2c7d5d658689d090f1a'),
   Address.fromString('0xd00f9ca46ce0e4a63067c4657986f0167b0de1e5'),
   // weth-btc pool
-  Address.fromString('0x209c865390fF2F0E13CE1Eda1Cf74637f364f29f')
+  Address.fromString('0xadc7B4096C3059Ec578585Df36E6E1286d345367')
 ]
 
 export const AM_USD_BALANCER = Address.fromString('0xb9ae7a44f9060a80bf436d48c4d7ad42d15715ee')
