@@ -22,6 +22,5 @@ export function saveReward(
     reward.reward = rewardAmount
     reward.tx = tx.hash.toHex();
     reward.save()
-
   }
 }

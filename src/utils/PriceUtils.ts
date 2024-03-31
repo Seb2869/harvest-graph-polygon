@@ -356,49 +356,6 @@ export function getPriceFotMeshSwap(underlyingAddress: string, block: number): B
     )
 }
 
-export function getPriceByAddress(address: Address, block: number): BigDecimal {
-
-  if (isPsAddress(address.toHexString())) {
-    return getPriceForCoin(getFarmToken(), block).divDecimal(BD_18)
-  }
-  const underlyingAddress = fetchUnderlyingAddress(address).toHexString()
-
-  let price = getPriceForCoin(Address.fromString(underlyingAddress), block)
-  if (!price.isZero()) {
-    return price.divDecimal(BD_18)
-  }
-
-  const underlying = Token.load(underlyingAddress)
-  if (underlying != null) {
-    if (isLpUniPair(underlying.name)) {
-      const tempPrice = getPriceForCoin(Address.fromString(underlyingAddress), block)
-      if (tempPrice.gt(DEFAULT_PRICE)) {
-        return tempPrice.divDecimal(BD_18)
-      }
-      return getPriceLpUniPair(underlying.id, block)
-    }
-
-    if (isBalancer(underlying.name)) {
-      return getPriceForBalancer(underlying.id, block)
-    }
-
-    if (isCurve(underlying.name)) {
-      const tempPrice = getPriceForCoin(Address.fromString(underlying.id), block)
-      if (!tempPrice.isZero()) {
-        return tempPrice.divDecimal(BD_18)
-      }
-
-      return getPriceForCurve(underlyingAddress, block)
-    }
-
-    if (isMeshSwap(underlying.name)) {
-      return getPriceFotMeshSwap(underlyingAddress, block)
-    }
-  }
-
-  return BigDecimal.zero()
-}
-
 export function getPriceForQuickSwapUniV3(address: Address, block: number): BigDecimal {
 
   const vault = QuickSwapVaultContract.bind(address)
@@ -553,12 +510,6 @@ export function getPriceForCoinPearlWithTokens(tokenA: Address, tokenB: Address)
 
 
   return reserve0.div(reserve1);
-}
-
-export function getPriceForTetuVault(address: Address): BigDecimal {
-  const contract = TetuPriceCalculatorContract.bind(ORACLE_PRICE_TETU)
-  const tryPrice = contract.try_getPriceWithDefaultOutput(address)
-  return tryPrice.reverted ? BigDecimal.zero() : tryPrice.value.divDecimal(BD_18)
 }
 
 export function getPriceForUniswapV3(poolAdr: Address, block: number): BigDecimal {

@@ -24,6 +24,7 @@ export const MODULE_RESULT = 75600;
 export const MODULE_RESULT_V2 = 518400;
 export const CONST_ID = '1';
 export const TWO_WEEKS_IN_SECONDS = BigInt.fromString('1209600');
+export const MAX_TVL_VALUE = BigDecimal.fromString('3000000');
 
 export const PEARL_ROUTER = Address.fromString('0xcC25C0FD84737F44a7d38649b69491BBf0c7f083');
 
@@ -129,6 +130,8 @@ export const UNISWAP_V3_FEES = [
 export const WETH_LIST = [
   Address.fromString('0x4a77ef015ddcd972fd9ba2c7d5d658689d090f1a'),
   Address.fromString('0xd00f9ca46ce0e4a63067c4657986f0167b0de1e5'),
+  // weth-btc pool
+  Address.fromString('0x209c865390fF2F0E13CE1Eda1Cf74637f364f29f')
 ]
 
 export const AM_USD_BALANCER = Address.fromString('0xb9ae7a44f9060a80bf436d48c4d7ad42d15715ee')
@@ -151,6 +154,7 @@ export const PAR_USDT_UNISWAP_V_3 = Address.fromString('0xfa22d298e3b0bc1752e5ef
 export const JBRL = '0xf2f77FE7b8e66571E0fca7104c4d670BF1C8d722'.toLowerCase();
 export const BRZ = Address.fromString('0x491a4eB4f1FC3BfF8E1d2FC856a6A46663aD556f');
 
+export const ST_ETH_ETH_VAULT = '0x466506EB97bDdF4B4b2B50979E251bF92FB26799'.toLowerCase();
 
 export function isStableCoin(address: string): boolean {
   if (dataSource.network() == 'mainnet') {
