@@ -364,36 +364,37 @@ export function getPriceForQuickSwapUniV3(address: Address, block: number): BigD
     return BigDecimal.zero()
   }
   const poolAddress = tryPool.value
-  const pool = QuickSwapPoolContract.bind(poolAddress)
+  // const pool = QuickSwapPoolContract.bind(poolAddress)
 
-  const liquidity = pool.liquidity()
-  const token0 = ERC20.bind(pool.token0())
-  const token1 = ERC20.bind(pool.token1())
-  const balanceToken0 = token0.balanceOf(poolAddress)
-  const balanceToken1 = token1.balanceOf(poolAddress)
+  // const liquidity = pool.liquidity()
+  const token0 = ERC20.bind(vault.token0())
+  const token1 = ERC20.bind(vault.token1())
+  // const balanceToken0 = token0.balanceOf(poolAddress)
+  // const balanceToken1 = token1.balanceOf(poolAddress)
+  const tryGetTotalAmounts = vault.try_getTotalAmounts();
+  if (tryGetTotalAmounts.reverted) {
+    return BigDecimal.zero()
+  }
+  const amount0 = tryGetTotalAmounts.value.value0;
+  const amount1 = tryGetTotalAmounts.value.value1;
   const priceToken0 = getPriceForCoin(token0._address, block)
   const priceToken1 = getPriceForCoin(token1._address, block)
   if (priceToken0.isZero()
-    || liquidity.isZero()
     || token0.decimals() == 0
     || token1.decimals() == 0
     || priceToken1.isZero()
-    || balanceToken1.isZero()
-    || balanceToken0.isZero()) {
+    || amount0.isZero()
+    || amount1.isZero()) {
     return BigDecimal.zero()
   }
 
 
   const balance = priceToken0.divDecimal(BD_18)
-    .times(balanceToken0.divDecimal(pow(BD_TEN, token0.decimals())))
+    .times(amount0.divDecimal(pow(BD_TEN, token0.decimals())))
     .plus(
       priceToken1.divDecimal(BD_18)
-        .times(balanceToken1.divDecimal(pow(BD_TEN, token1.decimals()))))
-
-  const poolPrice = balance.div(liquidity.divDecimal(
-    BD_18
-  ))
-
+        .times(amount1.divDecimal(pow(BD_TEN, token1.decimals()))))
+  
   const tryTS = vault.try_totalSupply()
   if (tryTS.reverted) {
     return BigDecimal.zero()
