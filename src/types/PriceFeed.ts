@@ -20,6 +20,9 @@ export function createPriceFeed(vault: Vault, price: BigDecimal, block: ethereum
       priceFeed.sharePrice = sharePrice;
       priceFeed.value = price.times(sharePrice);
     }
+    priceFeed.priceFeedSequenceId = vault.priceFeedSequenceId;
+    vault.priceFeedSequenceId = vault.priceFeedSequenceId + 1;
+    vault.save();
     priceFeed.save();
   }
 

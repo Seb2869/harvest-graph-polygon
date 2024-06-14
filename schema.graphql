@@ -21,6 +21,7 @@ type Vault @entity {
   underlying: Token!
   tvl: BigDecimal!
   tvlSequenceId: Int!
+  priceFeedSequenceId: Int!
   priceUnderlying: BigDecimal!
   apy: BigDecimal!
   apyReward: BigDecimal!
@@ -295,5 +296,6 @@ type PriceFeed @entity {
   # price * sharePrice
   value: BigDecimal!
   timestamp: BigInt!
+  priceFeedSequenceId: Int!
   createAtBlock: BigInt!
 }
