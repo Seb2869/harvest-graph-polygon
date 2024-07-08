@@ -6,6 +6,7 @@ import { loadOrCreateStrategy } from "./Strategy";
 import { fetchUnderlyingAddress } from "../utils/VaultUtils";
 import { Vault, VaultUtil } from '../../generated/schema';
 import { pushVault } from './TotalTvlUtils';
+import { BI_18 } from '../utils/Constant';
 
 export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, strategyAddress: string = 'unknown'): Vault {
   let vault = Vault.load(vaultAddress.toHex())
@@ -24,7 +25,7 @@ export function loadOrCreateVault(vaultAddress: Address, block: ethereum.Block, 
     vault.timestamp = block.timestamp;
     vault.underlying = loadOrCreateERC20Token(underlying).id
     vault.lastShareTimestamp = BigInt.zero()
-    vault.lastSharePrice = BigInt.zero()
+    vault.lastSharePrice = BI_18
     vault.skipFirstApyReward = true
     vault.tvl = BigDecimal.zero()
     vault.tvlSequenceId = 1;
