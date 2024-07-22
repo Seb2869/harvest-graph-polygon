@@ -1,7 +1,6 @@
-import { TotalTvlCount, TotalTvlUtil } from '../../generated/schema';
+import { TotalTvlCount, TotalTvlHistoryV2, TotalTvlUtil } from '../../generated/schema';
 import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { BI_EVERY_7_DAYS, canCalculateTotalTvl, CONST_ID } from '../utils/Constant';
-import { createTvl, createTvlV2 } from './Tvl';
 import { loadOrCreateVault } from './Vault';
 
 export function pushVault(address: string, block: ethereum.Block): void {
@@ -16,7 +15,7 @@ export function pushVault(address: string, block: ethereum.Block): void {
   vaultUtils.save()
 }
 
-export function canCalculateTotalTvlV2(block: ethereum.Block): void {
+export function checkAndCreateTotalTvlHistory(block: ethereum.Block): void {
   const tvlUtil = getTvlUtils(block);
 
   if (tvlUtil.lastTimestampUpdate.plus(BI_EVERY_7_DAYS) > block.timestamp || tvlUtil.lastTimestampUpdate.isZero()) {
@@ -66,4 +65,17 @@ export function totalTvlUp(): BigInt {
   totalCount.length = totalCount.length.plus(BigInt.fromString('1'));
   totalCount.save();
   return totalCount.length;
+}
+
+export function createTvlV2(totalTvl: BigDecimal, block: ethereum.Block): void {
+  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toString())
+  if (totalTvlHistory == null) {
+    totalTvlHistory = new TotalTvlHistoryV2(block.number.toString())
+
+    totalTvlHistory.sequenceId = totalTvlUp();
+    totalTvlHistory.value = totalTvl
+    totalTvlHistory.timestamp = block.timestamp
+    totalTvlHistory.createAtBlock = block.number
+    totalTvlHistory.save()
+  }
 }

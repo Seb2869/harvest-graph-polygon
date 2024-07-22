@@ -26,5 +26,5 @@ export function handleRewardAdded(event: RewardAdded): void {
   }
 
   saveReward(poolAddress, tryRewardToken.value, tryRewardRate.value, tryPeriodFinish.value, rewardAmount, event.transaction, event.block)
-  saveApyReward(poolAddress, tryRewardToken.value, tryRewardRate.value, tryPeriodFinish.value, event.transaction, event.block)
+  saveApyReward(poolAddress, event.transaction, event.block)
 }

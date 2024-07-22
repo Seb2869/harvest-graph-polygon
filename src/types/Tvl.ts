@@ -5,7 +5,7 @@ import { BD_TEN, BD_ZERO, MAX_TVL_VALUE, ST_ETH_ETH_VAULT } from '../utils/Const
 import { pow } from "../utils/MathUtils";
 import { fetchPricePerFullShare } from "../utils/VaultUtils";
 import { getPriceByVault } from "../utils/PriceUtils";
-import { canCalculateTotalTvlV2, totalTvlUp } from './TotalTvlUtils';
+import { checkAndCreateTotalTvlHistory, createTotalTvl, totalTvlUp } from './TotalTvlUtils';
 
 export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
   const vaultAddress = address;
@@ -14,7 +14,7 @@ export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
     const id = `${block.number.toString()}-${vaultAddress.toHex()}`
     let tvl = Tvl.load(id)
     if (tvl == null) {
-      canCalculateTotalTvlV2(block);
+      checkAndCreateTotalTvlHistory(block);
       tvl = new Tvl(id);
 
       tvl.vault = vault.id
@@ -44,7 +44,6 @@ export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
       }
       tvl.tvlSequenceId = vault.tvlSequenceId;
       tvl.save()
-      // createTotalTvl(vault.tvl, tvl.value, id, block)
       vault.tvl = tvl.value
       vault.tvlSequenceId = vault.tvlSequenceId + 1;
       vault.priceUnderlying = price
@@ -53,17 +52,4 @@ export function createTvl(address: Address, block: ethereum.Block): Tvl | null {
     return tvl;
   }
   return null;
-}
-
-export function createTvlV2(totalTvl: BigDecimal, block: ethereum.Block): void {
-  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toString())
-  if (totalTvlHistory == null) {
-    totalTvlHistory = new TotalTvlHistoryV2(block.number.toString())
-
-    totalTvlHistory.sequenceId = totalTvlUp();
-    totalTvlHistory.value = totalTvl
-    totalTvlHistory.timestamp = block.timestamp
-    totalTvlHistory.createAtBlock = block.number
-    totalTvlHistory.save()
-  }
 }

@@ -22,33 +22,8 @@ import {
 } from "../utils/PotPoolUtils";
 import { VaultContract } from '../../generated/Controller1/VaultContract';
 
-export function saveApyAutoCompound(vaultAddress: Address, block: ethereum.Block, tx: ethereum.Transaction): void {
-  const vault = Vault.load(vaultAddress.toHex())
-  if (vault != null) {
-    const vaultContract = VaultContract.bind(vaultAddress)
-    const tryPriceShare = vaultContract.try_getPricePerFullShare()
-    if (!tryPriceShare.reverted) {
-      const newSharePrice = tryPriceShare.value
-      if (!vault.lastSharePrice.isZero()) {
-        const timestamp = block.timestamp
-        const diffSharePrice = newSharePrice.minus(vault.lastSharePrice).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
-        if (diffSharePrice.gt(BigDecimal.zero())) {
-          const diffTimeStamp = timestamp.minus(vault.lastShareTimestamp)
-          calculateAndSaveApyAutoCompound(`${tx.hash}-${vault.id}`, diffSharePrice, diffTimeStamp, vault, block)
-          vault.lastShareTimestamp = timestamp
-          vault.lastSharePrice = newSharePrice
-          vault.save()
-        }
-      }
-    }
-  }
-}
-
 export function saveApyReward(
   poolAddress: Address,
-  rewardToken: Address,
-  rewardRate: BigInt,
-  periodFinish: BigInt,
   tx: ethereum.Transaction,
   block: ethereum.Block
 ): void {
@@ -123,24 +98,6 @@ export function saveApyReward(
       apyReward.apy = apy
       apyReward.tvlUsd = tvlUsd
       apyReward.prices = prices
-      // if (price.gt(BigDecimal.zero())) {
-      //
-      //   const tokenPrice = getPriceForCoin(Address.fromString(pool.rewardTokens[0]), block.number.toI32())
-      //   const period = (periodFinish.minus(block.timestamp)).toBigDecimal()
-      //
-      //   if (!tokenPrice.isZero() && !rewardRate.isZero()) {
-      //     apyReward.rewardForPeriod = rewardRate.divDecimal(BD_18).times(tokenPrice.divDecimal(BD_18)).times(period)
-      //   }
-      //
-      //   const tvlUsd = calculateTvlUsd(Address.fromString(vault.id), price)
-      //   apyReward.tvlUsd = tvlUsd
-      //   const apr = calculateApr(period, apyReward.rewardForPeriod, tvlUsd)
-      //   if (!(BigDecimal.compare(apr, BD_ZERO) == 0)) {
-      //     const apyValue = calculateApy(apr)
-      //     apyReward.apr = apr
-      //     apyReward.apy = apyValue
-      //   }
-      // }
 
       if (apyReward.apy.le(BigDecimal.zero()) || apyReward.apy.gt(BIG_APY_BD)) {
         // don't save 0 APY

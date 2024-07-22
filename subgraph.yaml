@@ -58,7 +58,7 @@ dataSources:
         - handler: handleBlock
           filter:
             kind: polling
-            every: 41600
+            every: 21600
       file: ./src/ControllerListener.ts
   - kind: ethereum
     name: Controller2
