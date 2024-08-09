@@ -195,6 +195,7 @@ type UserBalance @entity {
   value: BigDecimal!
   poolBalance: BigDecimal!
   vaultBalance: BigDecimal!
+  underlyingBalance: BigDecimal!
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
@@ -210,7 +211,38 @@ type UserBalanceHistory @entity {
   vaultBalance: BigDecimal!
   poolBalance: BigDecimal!
   priceUnderlying: BigDecimal!
+  underlyingBalance: BigDecimal!
   sharePrice: BigInt!
+  timestamp: BigInt!
+  createAtBlock: BigInt!
+}
+
+type UserTotalProfit @entity {
+  "user"
+  id: ID!
+  "profit * current usd price"
+  value: BigDecimal!
+}
+
+type UserProfit @entity {
+  "user-vault"
+  id: ID!
+  "profit * current usd price"
+  value: BigDecimal!
+  vault: Vault!
+  userAddress: String
+}
+
+type UserProfitHistory @entity {
+  "tx-user-vault"
+  id: ID!
+  userAddress: String
+  transactionType: TransactionType!
+  vault: Vault!
+  "Amount profit in user address"
+  value: BigDecimal!
+  sharePrice: BigInt!
+  transactionAmount: BigInt!
   timestamp: BigInt!
   createAtBlock: BigInt!
 }
