@@ -34,6 +34,7 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
       userBalance.vault = vault.id
       userBalance.value = BigDecimal.zero()
       userBalance.userAddress = beneficary.toHex()
+      userBalance.underlyingBalance = BigDecimal.zero()
     }
 
     const delimiter = pow(BD_TEN, vault.decimal.toI32());
