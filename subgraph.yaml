@@ -51,6 +51,8 @@ dataSources:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
@@ -109,6 +111,8 @@ dataSources:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
@@ -162,6 +166,8 @@ dataSources:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: SharePriceChangeLog(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleSharePriceChangeLog
@@ -213,6 +219,8 @@ templates:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -267,6 +275,8 @@ templates:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: RewardAdded(address,uint256)
           handler: handleRewardAdded
@@ -317,6 +327,8 @@ templates:
           file: ./abis/pearl/PearlRouter.json
         - name: PearlPairContract
           file: ./abis/pearl/PearlPair.json
+        - name: GammaVaultContract
+          file: ./abis/gamma/GammaVault.json
       eventHandlers:
         - event: ProfitLogInReward(uint256,uint256,uint256)
           handler: handleProfitLogInReward

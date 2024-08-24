@@ -26,7 +26,7 @@ import {
   checkBalancer,
   isAmUsd,
   isBalancer,
-  isCurve,
+  isCurve, isGammaVault,
   isLpUniPair,
   isMeshSwap, isPar, isPearl,
   isQuickSwapUniV3,
@@ -42,6 +42,7 @@ import { createPriceFeed } from '../types/PriceFeed';
 import { PearlRouterContract } from '../../generated/Controller1/PearlRouterContract';
 import { PearlPairContract } from '../../generated/Controller1/PearlPairContract';
 import { UniswapV3PoolContract } from '../../generated/Controller1/UniswapV3PoolContract';
+import { GammaVaultContract } from '../../generated/Controller1/GammaVaultContract';
 
 
 export function getPriceForCoin(reqAddress: Address, block: number): BigInt {
@@ -131,6 +132,12 @@ export function getPriceByVault(vault: Vault, block: ethereum.Block): BigDecimal
       return tempInPrice;
     }
 
+    if (isGammaVault(underlying.name, underlying.id)) {
+      const tempInPrice = getPriceGammaLpUniPair(underlying.id, block.number.toI32());
+      createPriceFeed(vault, tempInPrice, block);
+      return tempInPrice
+    }
+
     if (isMeshSwap(underlying.name)) {
       const tempPrice = getPriceFotMeshSwap(underlyingAddress, block.number.toI32())
       createPriceFeed(vault, tempPrice, block);
@@ -162,6 +169,44 @@ export function getPriceForTetu(address: Address): BigDecimal {
     return BigDecimal.zero()
   }
   return tryGetPrice.value.divDecimal(BD_18)
+}
+
+export function getPriceGammaLpUniPair(underlyingAddress: string, block: number): BigDecimal {
+  const gammaVault = GammaVaultContract.bind(Address.fromString(underlyingAddress))
+  const tryGetTotalAmounts = gammaVault.try_getTotalAmounts()
+  if (tryGetTotalAmounts.reverted) {
+    log.log(log.Level.WARNING, `Can not get reserves for underlyingAddress = ${underlyingAddress}, try get price for coin`)
+
+    return getPriceForCoin(Address.fromString(underlyingAddress), block).divDecimal(BD_18)
+  }
+  const reserves = tryGetTotalAmounts.value
+  const totalSupply = gammaVault.totalSupply()
+  const positionFraction = BD_ONE.div(totalSupply.toBigDecimal().div(BD_18))
+
+  const token0 = gammaVault.token0()
+  const token1 = gammaVault.token1()
+
+  const firstCoin = reserves.getTotal0().toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token0).toI32()))
+  const secondCoin = reserves.getTotal1().toBigDecimal().times(positionFraction)
+    .div(pow(BD_TEN, fetchContractDecimal(token1).toI32()))
+
+  const token0Price = getPriceForCoin(token0, block)
+  const token1Price = getPriceForCoin(token1, block)
+
+  if (token0Price.isZero() || token1Price.isZero()) {
+    log.log(log.Level.WARNING, `Some price is zero token0 ${token0.toHex()} = ${token0Price} , token1 ${token1.toHex()} = ${token1Price}`)
+    return BigDecimal.zero()
+  }
+
+  return token0Price
+    .divDecimal(BD_18)
+    .times(firstCoin)
+    .plus(
+      token1Price
+        .divDecimal(BD_18)
+        .times(secondCoin)
+    )
 }
 
 export function getPriceForCurve(underlyingAddress: string, block: number): BigDecimal {

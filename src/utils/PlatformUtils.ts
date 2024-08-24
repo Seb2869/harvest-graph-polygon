@@ -15,6 +15,7 @@ import {
 import { Address } from "@graphprotocol/graph-ts";
 import { QuickSwapVaultContract } from "../../generated/Controller1/QuickSwapVaultContract";
 import { WeightedPool2TokensContract } from '../../generated/Controller1/WeightedPool2TokensContract';
+import { GammaVaultContract } from '../../generated/Controller1/GammaVaultContract';
 
 export function isLpUniPair(name: string): boolean {
   for (let i=0;i<LP_UNI_PAIR_CONTRACT_NAME.length;i++) {
@@ -32,6 +33,11 @@ export function isBalancer(name: string): boolean {
     }
   }
   return false
+}
+
+export function isGammaVault(name: string, address: string): boolean {
+  return !!(name.toLowerCase().startsWith('x') &&
+    !GammaVaultContract.bind(Address.fromString(address)).try_getBasePosition().reverted);
 }
 
 export function isCurve(name: string): boolean {
