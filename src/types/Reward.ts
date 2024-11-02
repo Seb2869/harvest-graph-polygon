@@ -1,5 +1,6 @@
 import { Pool, Reward } from "../../generated/schema";
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
+import { loadOrCreatePotPool } from './PotPool';
 
 export function saveReward(
   poolAddress: Address,
@@ -10,17 +11,14 @@ export function saveReward(
   tx: ethereum.Transaction,
   block: ethereum.Block
   ): void {
-  let pool = Pool.load(poolAddress.toHex())
-  if (pool != null) {
-    // create reward
-    let reward = new Reward(`${tx.hash.toHex()}-${pool.id}-${rewardToken.toHex()}`)
-    reward.timestamp = block.timestamp
-    reward.pool = poolAddress.toHex()
-    reward.token = rewardToken.toHex()
-    reward.rewardRate = rewardRate
-    reward.periodFinish = periodFinish
-    reward.reward = rewardAmount
-    reward.tx = tx.hash.toHex();
-    reward.save()
-  }
+  const pool = loadOrCreatePotPool(poolAddress, block)
+  let reward = new Reward(Bytes.fromUTF8(`${tx.hash.toHex()}-${pool.id}-${rewardToken.toHex()}`))
+  reward.timestamp = block.timestamp
+  reward.pool = poolAddress.toHex()
+  reward.token = rewardToken.toHex()
+  reward.rewardRate = rewardRate
+  reward.periodFinish = periodFinish
+  reward.reward = rewardAmount
+  reward.tx = tx.hash.toHex();
+  reward.save()
 }

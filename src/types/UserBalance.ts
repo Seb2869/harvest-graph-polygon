@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import {
   UserBalance,
   UserBalanceHistory, UserProfit,
@@ -16,7 +16,6 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
   const vault = Vault.load(vaultAddress.toHex())
   if (vault != null) {
     const vaultContract = VaultContract.bind(vaultAddress)
-    const sharePrice = vaultContract.getPricePerFullShare().divDecimal(pow(BD_TEN, vault.decimal.toI32()))
     let poolBalance = BigDecimal.zero()
     if (vault.pool != null) {
       const poolContract = ERC20.bind(Address.fromString(vault.pool!))
@@ -25,7 +24,7 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
     const vaultBalance = vaultContract.balanceOf(beneficary).divDecimal(pow(BD_TEN, vault.decimal.toI32()))
     const value = vaultBalance.plus(poolBalance)
 
-    const userBalanceId = `${vault.id}-${beneficary.toHex()}`
+    const userBalanceId = Bytes.fromUTF8(`${vault.id}-${beneficary.toHex()}`);
     let userBalance = UserBalance.load(userBalanceId)
     if (userBalance == null) {
       userBalance = new UserBalance(userBalanceId)
@@ -57,7 +56,7 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
     userBalance.underlyingBalance = BigDecimal.zero()
 
     userBalance.save()
-    const historyId = `${tx.hash.toHex()}-${beneficary.toHex()}-${vault.id}-${isDeposit.toString()}`;
+    const historyId = Bytes.fromUTF8(`${tx.hash.toHex()}-${beneficary.toHex()}-${vault.id}-${isDeposit.toString()}`);
     const userBalanceHistory = new UserBalanceHistory(historyId)
     userBalanceHistory.createAtBlock = block.number
     userBalanceHistory.timestamp = block.timestamp
@@ -76,7 +75,7 @@ export function createUserBalance(vaultAddress: Address, amount: BigInt, benefic
 
     updateVaultUsers(vault, value, beneficary.toHex());
 
-    const userTransaction = new UserTransaction(`${tx.hash.toHex()}-${vault.id}-${isDeposit.toString()}`)
+    const userTransaction = new UserTransaction(Bytes.fromUTF8(`${tx.hash.toHex()}-${vault.id}-${isDeposit.toString()}`));
     userTransaction.createAtBlock = block.number
     userTransaction.timestamp = block.timestamp
     userTransaction.userAddress = beneficary.toHex()

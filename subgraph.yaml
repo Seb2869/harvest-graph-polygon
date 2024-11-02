@@ -280,6 +280,8 @@ templates:
       eventHandlers:
         - event: RewardAdded(address,uint256)
           handler: handleRewardAdded
+        - event: RewardPaid(indexed address,address,uint256)
+          handler: handleRewardPaid
       file: ./src/PotPoolListener.ts
   - kind: ethereum/contract
     name: StrategyListener

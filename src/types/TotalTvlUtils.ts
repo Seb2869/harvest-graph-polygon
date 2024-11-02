@@ -1,5 +1,5 @@
 import { TotalTvlCount, TotalTvlHistoryV2, TotalTvlUtil } from '../../generated/schema';
-import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigDecimal, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { BI_EVERY_7_DAYS, canCalculateTotalTvl, CONST_ID } from '../utils/Constant';
 import { loadOrCreateVault } from './Vault';
 
@@ -68,9 +68,10 @@ export function totalTvlUp(): BigInt {
 }
 
 export function createTvlV2(totalTvl: BigDecimal, block: ethereum.Block): void {
-  let totalTvlHistory = TotalTvlHistoryV2.load(block.number.toString())
+  const id = Bytes.fromUTF8(block.number.toString());
+  let totalTvlHistory = TotalTvlHistoryV2.load(id)
   if (totalTvlHistory == null) {
-    totalTvlHistory = new TotalTvlHistoryV2(block.number.toString())
+    totalTvlHistory = new TotalTvlHistoryV2(id)
 
     totalTvlHistory.sequenceId = totalTvlUp();
     totalTvlHistory.value = totalTvl

@@ -10,7 +10,7 @@ import {
   MODULE_RESULT,
   MODULE_RESULT_V2, TWO_WEEKS_IN_SECONDS,
 } from './utils/Constant';
-import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { calculateAndSaveApyAutoCompound } from "./types/Apy";
 import { createTotalTvl, getTvlUtils } from './types/TotalTvlUtils';
 import { SharePriceChangeLog } from '../generated/Controller1/ControllerContract';
@@ -23,7 +23,7 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
   const strategyAddress = event.params.strategy.toHex();
   const block = event.block.number;
   const timestamp = event.block.timestamp;
-  const sharePrice = new SharePrice(`${event.transaction.hash.toHex()}-${vaultAddress}`)
+  const sharePrice = new SharePrice(Bytes.fromUTF8(`${event.transaction.hash.toHex()}-${vaultAddress}`));
   let vault = loadOrCreateVault(Address.fromString(vaultAddress), event.block, strategyAddress);
 
   sharePrice.vault = vaultAddress;
@@ -43,7 +43,7 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
       }
       const diffSharePrice = tempDiffSharePrice.divDecimal(pow(BD_TEN, vault.decimal.toI32()))
       const diffTimestamp = timestamp.minus(lastShareTimestamp)
-      calculateAndSaveApyAutoCompound(`${event.transaction.hash.toHex()}-${vaultAddress}`, diffSharePrice, diffTimestamp, vault, event.block)
+      calculateAndSaveApyAutoCompound(Bytes.fromUTF8(`${event.transaction.hash.toHex()}-${vaultAddress}`), diffSharePrice, diffTimestamp, vault, event.block)
     }
 
     if (vault.lastUsersShareTimestamp.plus(TWO_WEEKS_IN_SECONDS).lt(event.block.timestamp)) {
@@ -58,7 +58,7 @@ export function handleSharePriceChangeLog(event: SharePriceChangeLog): void {
     vault.lastSharePrice = sharePrice.newSharePrice
     vault.save()
 
-    const vaultHistoryId = `${event.transaction.hash.toHexString()}-${vaultAddress}`
+    const vaultHistoryId = Bytes.fromUTF8(`${event.transaction.hash.toHexString()}-${vaultAddress}`);
     let vaultHistory = VaultHistory.load(vaultHistoryId)
     if (!vaultHistory) {
       vaultHistory = new VaultHistory(vaultHistoryId);
@@ -78,7 +78,7 @@ export function handleBlock(block: ethereum.Block): void {
     const vault = loadOrCreateVault(Address.fromString(vaultUtils.vaults[i]), block);
     const price = getPriceByVault(vault, block);
 
-    const priceHistoryId = `${vault.id}-${block.number.toString()}`
+    const priceHistoryId = Bytes.fromUTF8(`${vault.id}-${block.number.toString()}`);
     let priceHistory = PriceHistory.load(priceHistoryId)
     if (!priceHistory) {
       priceHistory = new PriceHistory(priceHistoryId);
